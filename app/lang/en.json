@@ -1,0 +1,130 @@
+{
+    "botNotAdmin": "The bot must be an admin.",
+    "menu": {
+        "all": "All Menus",
+        "welcome": "*`Hi {name}`*, Good {time}.",
+        "description": "Find new friends using the Anonymous Chat feature just like on Telegram.\nType `{command}` to start looking for new friends.",
+        "footer": "For more information, please type {command}",
+        "time": {
+            "morning": "Morning 🌄",
+            "afternoon": "Afternoon 🌤️",
+            "evening": "Evening 🌇",
+            "night": "Night 🌃"
+        }
+    },
+    "ai": {
+        "deepseek": {
+            "ex": "Example: {command} hi"
+        }
+    },
+    "group": {
+        "add": {
+            "ex": "Example: {prefix}add 628517xxxx",
+            "invited": "An invitation has been sent to {jid}.",
+            "already": "@{jid} is already in the group."
+        },
+        "kick": {
+            "ex": "Example: {prefix}kick @tag, or reply to someone's message then type {prefix}kick as the caption."
+        },
+        "promote": {
+            "ex": "Example: {command} @tag, or reply to someone's message then type {command} as the caption.",
+            "success": "Successfully promoted {jids} as admin."
+        },
+        "demote": {
+            "ex": "Example: {command} @tag, or reply to someone's message then type {command} as the caption.",
+            "success": "Successfully demoted {jids} as admin."
+        },
+        "score": {
+            "ex": "Example: {command} enable/disable",
+            "alreadyOn": "The social credit feature is already enabled in this group.",
+            "alreadyOff": "The social credit feature is already disabled in this group.",
+            "on": "The social credit feature has been enabled in this group.",
+            "off": "The social credit feature has been disabled in this group."
+        },
+        "wordblocker": {
+            "ex": "*WordBlocker* is a feature to automatically block certain words in the group.\n\n❖ Usage:\n▷ `{command} enable` / `{command} disable` — Enable or disable the feature.\n▷ `{command} add <word>` — Add a word to be blocked.\n▷ `{command} remove <word>` — Remove a word from the block list.\n▷ `{command} list` — Display the list of blocked words.",
+            "alreadyOn": "The wordblocker feature is already enabled in this group.",
+            "alreadyOff": "The wordblocker feature is already disabled in this group.",
+            "on": "The wordblocker feature has been enabled in this group.",
+            "off": "The wordblocker feature has been disabled in this group.",
+            "add": "The word `{word}` has been successfully added to the block list.",
+            "remove": "The word `{word}` has been successfully removed from the block list.",
+            "message": "The word `{word}` is not allowed in this group.\n> You have committed {strike} violation(s) out of a total of {maxStrike} chances."
+        },
+        "antimention": {
+            "ex": "Example: {command} enable/disable",
+            "alreadyOn": "The antiMention feature is already enabled in this group.",
+            "alreadyOff": "The antiMention feature is already disabled in this group.",
+            "on": "The antiMention feature has been enabled in this group.",
+            "off": "The antiMention feature has been disabled in this group.",
+            "message": "Mentioning this group is prohibited.\n> You have committed {strike} violation(s) out of a total of {maxStrike} chances."
+        },
+        "strike": {
+            "ex": "Example: {command} 5",
+            "success": "The maximum violation limit is set to {maxStrike}."
+        },
+        "randomkick": {
+            "ex": "Example: {command} 0-10 5\n> Note: 0-10 is the score range and 5 is the number of people (random) who will be kicked.",
+            "success": "Successfully kicked {success} out of {totalToKick} people."
+        },
+        "setlang": {
+            "ex": "Example: {command} en\n> Language options: {langs}",
+            "success": "Group language set to {lang}."
+        }
+    },
+    "personal": {
+        "setlang": {
+            "ex": "Example: {command} en\n> Language options: {langs}",
+            "success": "Language set to {lang}."
+        }
+    },
+    "join": {
+        "ex": "Example: {prefix}join https://chat.whatsapp.com/xxxxxx",
+        "success": "Successfully joined the group.",
+        "failed": "Failed to join the group: {message}"
+    },
+    "downloader": {
+        "fb": {
+            "ex": "Example: {command} https://www.facebook.com/xxxxxx"
+        },
+        "ig": {
+            "ex": "Example: {command} https://www.instagram.com/xxxxxx"
+        },
+        "tt": {
+            "ex": "Example: {command} https://www.tiktok.com/@xxxxxx"
+        },
+        "ytmp3": {
+            "ex": "Example: {command} https://www.youtube.com/watch?v=xxxxxx"
+        },
+        "ytdl": {
+            "ex": "Example: {command} 144p https://www.youtube.com/watch?v=xxxxxx\nAvailable resolutions: {formats}"
+        }
+    },
+    "owner": {
+        "prefix": {
+            "ex": "❖ Usage:\n▷ `{command} list` — Display the list of prefixes.\n▷ `{command} add <prefix>` — Add a prefix.\n▷ `{command} remove <prefix>` — Remove a prefix.",
+            "added": "Prefix `{prefix}` successfully added.",
+            "removed": "Prefix `{prefix}` successfully removed."
+        },
+        "owner": {
+            "ex": "❖ Usage:\n▷ `{command} list` — Display the list of owners.\n▷ `{command} add <number>` — Add an owner.\n▷ `{command} remove <number>` — Remove an owner.",
+            "added": "`{number}` successfully added.",
+            "removed": "`{number}` successfully removed."
+        }
+    },
+    "anonymousChat": {
+        "onlyPrivate": "_Cannot be used in a group. Please use it in a private chat._",
+        "example": "_`/start` to start looking for a chat partner._",
+        "alreadyInQueue": "_Searching for a partner..._\n\n> `/stop` to stop the search.",
+        "alreadyInChat": "_Currently in a chat._\n\n> `/stop` to stop the chat.\n> `/skip` to find a new partner.",
+        "inQueue": "_Searching for a partner..._\n> `/stop` to stop the search.",
+        "matched": "_Partner found, start chatting 😺._\n\n> `/stop` to stop the chat.\n> `/skip` to find a new partner.",
+        "notInChat": "_Not in a chat._\n\n> `/start` to start a chat.",
+        "left": "_Chat ended._\n\n> `/start` to start a chat.",
+        "partnerLeft": "_Partner left the chat, trying to find a new partner..._",
+        "maxAttempts": "_Partner left the chat._\n\n> `/skip` to find a new partner.",
+        "findNewPartner": "_Chat ended. Trying to find a new partner..._",
+        "messageTypeNotSupported": "_Allowed message types are only text, stickers, or images._",
+        "failedToDownloadSticker": "_Sticker failed to send._"
+    }
+}

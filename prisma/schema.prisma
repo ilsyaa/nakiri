@@ -1,0 +1,109 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../app/prisma"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+model DeviceAuth {
+    id      String @id @default(auto()) @map("_id") @db.ObjectId
+    session String
+    key     String
+    value   Json?
+
+    @@unique([session, key])
+    @@index([session])
+    @@map("device_auths")
+}
+
+model Bot {
+    id                String @id @default(auto()) @map("_id") @db.ObjectId
+    prefixs           Json
+    owners            Json
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+
+    @@map("bots")
+}
+
+// --- start groups model ---
+
+enum accessFeatures {
+  adminonly
+  everyone
+}
+
+model Group {
+    id                String         @id @default(auto()) @map("_id") @db.ObjectId
+    groupId           String
+    subject           String
+    visible           Boolean        @default(false)
+    link              String         @default("")
+    publicFeatures    Json           @default("[]")
+    accessFeatures    accessFeatures @default(everyone)
+    joinApprovalMode  Boolean
+    maxStrike         Int
+    wordBlocker       Json
+    antiMention       Json
+    welcome           Json
+    activityScore     Boolean
+    lang              String         @default("en")
+    createdAt         DateTime       @default(now())
+    updatedAt         DateTime       @updatedAt
+
+    participants      GroupParticipant[]
+
+    @@unique([groupId])
+    @@map("groups")
+}
+
+model GroupParticipant {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  groupId   String
+  jid       String
+  isAdmin   Boolean
+  strike    Int
+  score     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group     Group    @relation(fields: [groupId], references: [groupId])
+
+  @@unique([groupId, jid])
+  @@map("group_participants")
+}
+
+model GroupTag {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  groupId   String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("group_tags")
+}
+
+// --- end groups model ---
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  jid          String   
+  pushName     String?  @default("")
+  exp          Int      @default(0)
+  subscription Json     @default("{}")
+  banStatus    Json     @default("{}")
+  token        String   @default("")
+  lang         String   @default("en")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@unique([jid])
+  @@map("users")
+}
+
+// --- start Blockchain ---
+
+// --- end Blockchain ---

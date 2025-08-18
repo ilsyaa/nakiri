@@ -1,0 +1,23 @@
+const { Command } = require('../../../utils/command.js');
+const { prisma } = require('../../../utils/prisma.js');
+
+Command({
+  name: 'group-strike',
+  description: 'Set the maximum number of strikes before a member is removed from the group.',
+  alias: ['strike'],
+  tags : {
+    label : 'group'
+  },
+  run: async ({ m }) => {
+    if (!m.isGroup) return;
+    if (!m.isSenderAdmin) return;
+    if (!m.isBotAdmin) return m.reply(__('botNotAdmin'));
+
+    const body = m.content.textWithoutCommand.trim();
+    if (!body) return m.reply(__('group.strike.ex', { command: m.content.command }));
+
+    await prisma.group.update({ where: { id: m.db.group.id }, data: { maxStrike: parseInt(body) }});
+
+    m.reply(__('group.strike.success', { maxStrike: parseInt(body) }));
+  }
+});
