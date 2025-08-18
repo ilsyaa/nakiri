@@ -3,7 +3,7 @@ const serialize = require('../../utils/serialize.js');
 const { getAliases } = require('../../utils/command.js');
 const middleware = require('../../bot/middleware/app.js');
 const { prisma } = require('../../utils/prisma.js');
-const { USER_DEFAULT, GROUP_DEFAULT, PARTICIPANT_DEFAULT } = require('../../utils/schemaData.js');
+const { USER_DEFAULT, PARTICIPANT_DEFAULT } = require('../../utils/schemaData.js');
 const { isJidUser } = require('baileys');
 
 module.exports = async function ({
@@ -23,36 +23,22 @@ module.exports = async function ({
         WAMessage: message,
       });
 
-      if (m.isGroup) {
-        m.db.group = await prisma.Group.upsert({
-          where: { groupId: m.groupMetadata.id },
+      if (m.isGroup && isJidUser(m.sender)) {
+        m.db.groupParticipant = await prisma.groupParticipant.upsert({
+          where: {
+            groupId_jid: {
+              jid: m.sender,
+              groupId: m.groupMetadata.id
+            }
+          },
           update: {},
           create: {
-            ...GROUP_DEFAULT,
+            ...PARTICIPANT_DEFAULT,
+            jid: m.sender,
             groupId: m.groupMetadata.id,
-            subject: m.groupMetadata.subject,
-            joinApprovalMode: m.groupMetadata.joinApprovalMode,
-            lang: m.groupMetadata?.owner_country_code == 'ID' ? 'id' : m.groupMetadata?.subjectOwnerJid?.startsWith('62') ? 'id' : m.groupMetadata?.subjectOwner?.startsWith('62') ? 'id' : 'en'
+            isAdmin: m.isSenderAdmin
           },
         });
-
-        if (isJidUser(m.sender)) {
-          m.db.groupParticipant = await prisma.groupParticipant.upsert({
-            where: {
-              groupId_jid: {
-                jid: m.sender,
-                groupId: m.groupMetadata.id
-              }
-            },
-            update: {},
-            create: {
-              ...PARTICIPANT_DEFAULT,
-              jid: m.sender,
-              groupId: m.groupMetadata.id,
-              isAdmin: m.isSenderAdmin
-            },
-          });
-        }
       }
       
       if (isJidUser(m.sender)) {

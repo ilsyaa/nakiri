@@ -8,6 +8,7 @@ const {
 } = require('baileys');
 const { default: consola } = require('consola');
 const { prisma } = require('../utils/prisma.js');
+const { GROUP_DEFAULT } = require('../utils/schemaData.js');
 
 const MEDIA_TYPE = [ 'imageMessage', 'videoMessage', 'audioMessage', 'documentMessage', 'stickerMessage' ];
 let cacheBotDatabase = null;
@@ -18,21 +19,22 @@ module.exports = async function ({ sock, WAMessage }) {
     message: normalizeMessageContent(WAMessage.message),
   };
   const { key, message, broadcast, ...messages } = normalizedMessages;
+  const dbBot = await fetchBotFromDatabase();
   
   const chat = key.remoteJid;
   const botJid = jidNormalizedUser(sock?.user?.id);
   const botLid = jidNormalizedUser(sock?.user?.lid);
   const isGroup = isJidGroup(chat);
+  const groupMetadata = isGroup ? await sock.getGroupCache(chat) : {};
+  const dbGroup = isGroup ? await fetchGroupFromDatabase(groupMetadata) : null;
 
   const senderJid = isGroup || broadcast ? (isLidUser(key.participant) ? key.participantPn : key.participant) : (key.fromMe ? jidNormalizedUser(sock?.user?.id) : chat);
   const senderLid = isGroup || broadcast ? (isLidUser(key.participant) ? key.participant : key.participantLid) : (key.fromMe ? jidNormalizedUser(sock?.user?.id) : key.senderLid);
   const sender = senderJid;
 
-  const groupMetadata = isGroup ? await sock.getGroupCache(chat) : {};
-
   const mtype = getContentType(message);
-  const content = getMessageContent(message);
-  const quoted = await getQuotedMessage({ message, key, botJid, sock });
+  const content = getMessageContent(message, dbBot);
+  const quoted = await getQuotedMessage({ message, key, botJid, sock, dbBot });
 
   return {
     key,
@@ -47,7 +49,7 @@ module.exports = async function ({ sock, WAMessage }) {
 
     isGroup,
     isSenderBot: Boolean(senderJid === botJid),
-    isSenderOwner: (process.env.OWNERS || '').trim().split(',').includes(sender?.split('@')[0]) ? true : false,
+    isSenderOwner: dbBot.owners.includes(sender?.split('@')[0]) ? true : false,
     isSenderSuperAdmin: isGroup && groupMetadata?.participants?.some((participant) => participant.jid === senderJid && participant.admin == 'superadmin') || false,
     isSenderAdmin: isGroup && groupMetadata?.participants?.some((participant) => participant.jid === senderJid && (participant.admin == 'admin' || participant.admin == 'superadmin')) || false,
     isBotSuperAdmin: isGroup && groupMetadata?.participants?.some((participant) => participant.jid === botJid && participant.admin == 'superadmin') || false,
@@ -60,7 +62,8 @@ module.exports = async function ({ sock, WAMessage }) {
     quoted,
     lang: process.env.APP_LOCALE,
     db: {
-      bot: await botSettings(),
+      bot: dbBot,
+      group: dbGroup
     },
 
     sendMessage: async function (chat, content, options = {}) {
@@ -154,9 +157,9 @@ const getText = (message) => {
   );
 };
 
-const getMessageContent = (message) => {
+const getMessageContent = (message, dbBot) => {
   const mtype = getContentType(message);
-  const prefixs = (process.env?.PREFIXS || '/').trim().split(' ');
+  const prefixs = dbBot?.prefixs || [];
   const text = getText(message);
     
   return {
@@ -177,7 +180,7 @@ const getMessageContent = (message) => {
   };
 };
 
-const getQuotedMessage = async ({ message, key, botJid, sock }) => {
+const getQuotedMessage = async ({ message, key, botJid, sock, dbBot }) => {
   const mtype = getContentType(message);
   const messageContent = message?.[mtype];
   const contextInfo = messageContent?.contextInfo || null;
@@ -185,7 +188,7 @@ const getQuotedMessage = async ({ message, key, botJid, sock }) => {
   if (!Quoted) return null;
   const quotedMessage = normalizeMessageContent(Quoted);
   const type = getContentType(quotedMessage);
-  const content = getMessageContent(quotedMessage);
+  const content = getMessageContent(quotedMessage, dbBot);
 
   const participant = isJidGroup(key?.remoteJid) ? (await sock.getGroupCache(key?.remoteJid))?.participants?.find(p => isLidUser(contextInfo?.participant) ? p.lid == contextInfo.participant : p.jid == contextInfo.participant) : undefined;
   const senderJid = isJidGroup(key?.remoteJid) ? participant?.jid : key?.remoteJid;
@@ -208,9 +211,23 @@ const getQuotedMessage = async ({ message, key, botJid, sock }) => {
   };
 };
 
-const botSettings = async () => {
+const fetchBotFromDatabase = async () => {
   if (cacheBotDatabase) return cacheBotDatabase;
   const bot = await prisma.Bot.findFirst({});
   cacheBotDatabase = {...bot, clearCache: function () { cacheBotDatabase = null; }};
   return cacheBotDatabase;
+};
+
+const fetchGroupFromDatabase = async (groupMetadata) => {
+  return await prisma.Group.upsert({
+    where: { groupId: groupMetadata.id },
+    update: {},
+    create: {
+      ...GROUP_DEFAULT,
+      groupId: groupMetadata.id,
+      subject: groupMetadata.subject,
+      joinApprovalMode: groupMetadata.joinApprovalMode,
+      lang: groupMetadata?.owner_country_code == 'ID' ? 'id' : groupMetadata?.subjectOwnerJid?.startsWith('62') ? 'id' : groupMetadata?.subjectOwner?.startsWith('62') ? 'id' : 'en'
+    },
+  });
 };
