@@ -131,6 +131,9 @@
         "stickerToMedia": {
             "ex" : "Contoh: {command} <reply ke sticker>",
             "failedDownloadSticker": "Sticker rusak atau tidak ditemukan."
+        },
+        "ssweb": {
+            "ex" : "Contoh: {command} <url>"
         }
     },
 
