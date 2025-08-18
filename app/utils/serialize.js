@@ -204,10 +204,27 @@ const getQuotedMessage = async ({ message, key, botJid, sock, dbBot }) => {
       participantPn: isJidGroup(key.remoteJid) ? participant?.jid : undefined,
       participantLid: undefined
     },
+    chat: key?.remoteJid,
     sender: senderJid,
     content,
     mtype: type,
     message: quotedMessage,
+    downloadMedia: async function (message) {
+      try {
+        return await downloadMediaMessage(
+          message ?? this, 
+          'buffer', 
+          {}, 
+          {
+            logger: sock.ws.config.logger,
+            reuploadRequest: sock.updateMediaMessage
+          }
+        );
+      } catch (error) {
+        consola.error(`[SERIALIZE]: Error downloading media: ${error.message}.`);
+        return null;
+      }
+    },
   };
 };
 

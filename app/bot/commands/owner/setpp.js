@@ -19,7 +19,7 @@ Command({
     try {
       let media = null;
       if (m.quoted && m.quoted.content.isImage) {
-        media = await m.downloadMedia(m.quoted);
+        media = await m.quoted.downloadMedia();
       } else if (m.content.textWithoutCommand) {
         let { data } = await axios.get(m.body.arg, { responseType: 'arraybuffer' });
         media = data;

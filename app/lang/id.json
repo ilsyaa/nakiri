@@ -123,6 +123,17 @@
         }
     },
 
+    "tools": {
+        "mediaToSticker": {
+            "ex" : "Contoh: {command} <reply ke gambar/video/url>\nUntuk custom packname dan author: {command} packname|author",
+            "failedDownloadSticker": "Sticker rusak atau tidak ditemukan."
+        },
+        "stickerToMedia": {
+            "ex" : "Contoh: {command} <reply ke sticker>",
+            "failedDownloadSticker": "Sticker rusak atau tidak ditemukan."
+        }
+    },
+
     "anonymousChat": {
         "onlyPrivate": "_Tidak bisa di group. Silahkan gunakan di private chat._",
         "example": "_`/start` untuk memulai mencari partner ngobrol._",
