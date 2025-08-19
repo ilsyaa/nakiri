@@ -1,3 +1,4 @@
+const { default: axios } = require('axios');
 const { Command } = require('../../../utils/command.js');
 const { imageToWebp, videoToWebp, writeExif } = require('../../../utils/sticker.js');
 
@@ -28,6 +29,24 @@ Command({
     } else if (m.quoted && m.quoted.content.isSticker) {
       sticker = await m.quoted.downloadMedia();
       if (!sticker) return m.reply(__('tools.mediaToSticker.failedDownloadSticker'));
+    } else if (m.content.textWithoutCommand.startsWith('https://')) {
+      try {
+        const { data, headers } = await axios.get(m.content.textWithoutCommand, { responseType: 'arraybuffer' });
+        switch (headers.get('content-type').split('/')[0]) {
+        case 'image':
+          sticker = await imageToWebp(data);
+          break;
+        case 'video':
+        case 'gif':
+          sticker = await videoToWebp(data);
+          break;
+        default:
+          return m.reply(__('tools.mediaToSticker.typeNotSupported'));
+        }
+      } catch (e) {
+        console.error(e);
+        return m.reply(__('tools.mediaToSticker.failedFetchUrl'));
+      }
     }
 
     if (!sticker) return m.reply(__('tools.mediaToSticker.ex', { command: m.content.command }));

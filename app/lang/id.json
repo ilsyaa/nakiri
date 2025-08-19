@@ -126,7 +126,9 @@
     "tools": {
         "mediaToSticker": {
             "ex" : "Contoh: {command} <reply ke gambar/video/url>\nUntuk custom packname dan author: {command} packname|author",
-            "failedDownloadSticker": "Sticker rusak atau tidak ditemukan."
+            "failedDownloadSticker": "Sticker rusak atau tidak ditemukan.",
+            "typeNotSupported": "Jenis media tidak didukung.",
+            "failedFetchUrl": "Gagal mengambil media."
         },
         "stickerToMedia": {
             "ex" : "Contoh: {command} <reply ke sticker>",
