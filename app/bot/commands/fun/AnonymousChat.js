@@ -5,6 +5,9 @@ Command({
   name: 'anonymouschat-start',
   description: 'Anonymous Chat',
   alias: ['start'],
+  tags : {
+    label : 'fun'
+  },
   run: async ({ m }) => {
     if (m.isSenderBot) return;
     if (m.isGroup) return m.reply(__('anonymousChat.onlyPrivate', { command: m.content.command }));

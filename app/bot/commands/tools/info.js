@@ -6,7 +6,10 @@ const os = require('os');
 Command({
   name: 'other-statistic-info-bot',
   description: 'About',
-  alias: ['system', 'info'],
+  alias: ['info', 'system', 'about', 'author'],
+  tags : {
+    label : 'tools'
+  },
   run: async ({ m, sock }) => {
     const AnonChat = new AnonymousChat({ m });
     const info = await AnonChat.info();

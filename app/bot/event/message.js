@@ -43,6 +43,13 @@ module.exports = async function ({
       
       if (isJidUser(m.sender)) {
         m.db.user = await prisma.User.findUnique({ where: { jid: m.sender } });
+        if (m.db?.user && m.db.user?.pushName !== m.pushName) {
+          consola.info(`[WA: ${m.sender}] Pushname changed from ${m.db.user.pushName} to ${m.pushName}`);
+          await prisma.User.update({
+            where: { jid: m.sender },
+            data: { pushName: m.pushName }
+          });
+        }
       }
       
       m.lang = m.isGroup ? (m.db?.group?.lang || process.env.APP_LOCALE) : (m.db?.user?.lang || process.env.APP_LOCALE);

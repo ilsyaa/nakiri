@@ -47,6 +47,7 @@ const USER_DEFAULT = {
     message: '',
     expiredAt: null
   },
+  balance: 0,
   token: '',
   lang: 'en'
 };

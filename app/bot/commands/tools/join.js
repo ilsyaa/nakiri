@@ -5,7 +5,7 @@ Command({
   description: 'Join group via link',
   alias: ['join'],
   tags : {
-    label : 'other'
+    label : 'tools'
   },
   run: async ({ sock, m }) => {
     const link = m.content.textWithoutCommand.trim();
