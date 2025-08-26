@@ -97,13 +97,42 @@ model User {
   banStatus    Json     @default("{}")
   token        String   @default("")
   lang         String   @default("en")
+  balance      Float    @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  sentTransactions     Transaction[] @relation("SentTransactions")
+  receivedTransactions Transaction[] @relation("ReceivedTransactions")
 
   @@unique([jid])
   @@map("users")
 }
 
-// --- start Blockchain ---
+model Transaction {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  fromAddress String
+  toAddress   String
+  amount      Float
+  fee         Float
+  status      String @default("pending") // pending, confirmed, failed
 
-// --- end Blockchain ---
+  fromUser User? @relation("SentTransactions", fields: [fromAddress], references: [jid])
+  toUser   User? @relation("ReceivedTransactions", fields: [toAddress], references: [jid])
+
+  createdAt DateTime @default(now())
+
+  @@map("transactions")
+}
+
+model CurrencyMetadata {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  maxSupply       Float
+  currentSupply   Float
+  initialReward   Float
+  halvingInterval Int
+  transferFee     Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("currency_metadatas")
+}

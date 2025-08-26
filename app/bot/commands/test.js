@@ -4,6 +4,7 @@ const { Command, commands } = require('../../utils/command.js');
 // const { deletedMessagesLog } = require('../../utils/globalMap.js');
 const { default: axios } = require('axios');
 const { tmpfiles } = require('../../utils/uploader.js');
+const currencyInstance = require('../../utils/currency.js');
 
 Command({
   name: 'test',
@@ -11,7 +12,6 @@ Command({
   alias: ['test'],
   // eslint-disable-next-line no-unused-vars
   run: async ({ sock, m, options }) => {
-    console.log(m);
-    // console.log(await tmpfiles(await m.quoted.downloadMedia()));
+    console.log(await currencyInstance.statusInfo());
   }
 });

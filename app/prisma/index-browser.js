@@ -175,6 +175,28 @@ exports.Prisma.UserScalarFieldEnum = {
   banStatus: 'banStatus',
   token: 'token',
   lang: 'lang',
+  balance: 'balance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TransactionScalarFieldEnum = {
+  id: 'id',
+  fromAddress: 'fromAddress',
+  toAddress: 'toAddress',
+  amount: 'amount',
+  fee: 'fee',
+  status: 'status',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CurrencyMetadataScalarFieldEnum = {
+  id: 'id',
+  maxSupply: 'maxSupply',
+  currentSupply: 'currentSupply',
+  initialReward: 'initialReward',
+  halvingInterval: 'halvingInterval',
+  transferFee: 'transferFee',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -199,7 +221,9 @@ exports.Prisma.ModelName = {
   Group: 'Group',
   GroupParticipant: 'GroupParticipant',
   GroupTag: 'GroupTag',
-  User: 'User'
+  User: 'User',
+  Transaction: 'Transaction',
+  CurrencyMetadata: 'CurrencyMetadata'
 };
 
 /**

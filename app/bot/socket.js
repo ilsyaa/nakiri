@@ -196,7 +196,8 @@ module.exports = {
 
     await eventHandler({
       id,
-      sock
+      sock,
+      reconnecting
     });
         
     return sock;

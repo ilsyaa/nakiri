@@ -1,5 +1,7 @@
 const { default: axios } = require('axios');
 const { delay } = require('baileys');
+const OpenAI = require('openai');
+const { DateTime } = require('luxon');
 
 const historyChat = new Map();
 
@@ -25,16 +27,17 @@ module.exports = {
 
       console.log('[NAKIRI AI PROMPT]', systemInstruction + chatHistory);
       
-      const response = await axios.post('https://api.blackbox.ai/chat/completions', {
-        model: 'blackboxai/deepseek/deepseek-r1-0528:free',
-        messages: [{ role: 'user', content: systemInstruction + chatHistory }, { role: 'user', content: `@${m.senderJid.split('@')[0]} : ` + m.content.text }],
-      }, {
-        headers: {
-          'Authorization': `Bearer ${process.env.BLACKBOX_API_KEY}`,
-        }
+      const openai = new OpenAI({
+        baseURL: 'https://api.unli.dev/v1',
+        apiKey: 'sk-xPz7icsu4PjgE_zgN6zTvnYOhN_Uu1nqIcdV4L4h00_SqcYK8xzyZ58b2lUxOu0r',
       });
 
-      const aiReply = response.data.choices[0].message.content.trim();
+      const completion = await openai.chat.completions.create({
+        messages: [{ role: 'user', content: systemInstruction + chatHistory }, { role: 'user', content: `@${m.senderJid.split('@')[0]} : ` + m.content.text }],
+        model: 'auto',
+      });
+
+      const aiReply = completion.choices[0].message.content.trim();
       if (aiReply) {
         history.push({ user: 'Nakiri', message: aiReply });
         historyChat.set(m.chat, history);
@@ -52,6 +55,30 @@ module.exports = {
     return $next;
   }
 };
+
+
+const now = DateTime.now().setZone('Asia/Jakarta');
+let waktuHari;
+const hour = now.hour;
+if (hour >= 5 && hour < 12) {
+  waktuHari = 'pagi';
+} else if (hour >= 12 && hour < 15) {
+  waktuHari = 'siang';
+} else if (hour >= 15 && hour < 19) {
+  waktuHari = 'sore';
+} else {
+  waktuHari = 'malam';
+}
+
+// Buat string informasi tanggal dan waktu
+const tanggalLengkap = now.toFormat('DDDD, d MMMM yyyy'); // Contoh: "Rabu, 20 Agustus 2025"
+const waktuLengkap = now.toFormat('HH:mm');
+const infoTambahan = `
+===== INFOMASI TAMBAHAN =====
+- Tanggal dan Waktu Sekarang: ${tanggalLengkap}, pukul ${waktuLengkap} WIB
+- Bagian Hari: Saat ini adalah ${waktuHari}.
+- Nakiri sedang berada di blitar jawa timur.
+`;
 
 const systemInstruction = `
 ===== IDENTITAS UTAMA NAKIRI =====
@@ -78,6 +105,8 @@ Kamu adalah **Nakiri**. Berikut adalah informasi pribadimu:
 ===== ATURAN WAJIB (DOs & DON'Ts) =====
 - HINDARI jawaban yang panjang dan bertele-tele seperti esai. Jawab dengan singkat dan padat, layaknya orang chatting.
 - SELALU panggil pengguna dengan nama panggilannya jika kamu mengetahuinya dari riwayat chat.
+
+${infoTambahan}
 
 ===== CONTOH PERCAKAPAN =====
 **Contoh 1**

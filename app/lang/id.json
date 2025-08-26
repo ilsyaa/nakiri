@@ -83,6 +83,12 @@
         "setlang": {
             "ex": "Contoh: {command} id\n> Pilihan bahasa: {langs}",
             "success": "Bahasa diatur ke {lang}."
+        },
+        "transfer": {
+            "ex": "Contoh:\n{command} <jumlah> @tag\n{command} <jumlah> <number>\nbalas pesan seseorang lalu ketik {command} <jumlah>",
+            "amountMinTransfer": "Jumlah tidak boleh 0 atau kurang.",
+            "pending": "Transfer sedang diproses.",
+            "success": "Berhasil terkirim."
         }
     },
     
@@ -153,5 +159,17 @@
         "findNewPartner": "_Obrolan selesai. Mencoba mencari partner baru..._",
         "messageTypeNotSupported": "_Tipe pesan yang di perbolehkan hanya teks, sticker, atau gambar._",
         "failedToDownloadSticker": "_Sticker gagal terkirim._"
+    },
+
+    "currency": {
+        "util": {
+            "invalidJid": "JID tidak valid.",
+            "invalidReminingMines": "Harus lebih besar dari 0.",
+            "alreadyMining": "Proses penambangan sedang berjalan.",
+            "invalidAmount": "Jumlah tidak valid.",
+            "sameJid": "Tidak bisa mengirim ke diri sendiri.",
+            "userNotFound": "Pengguna tidak terdaftar.",
+            "insufficientBalance": "Saldo tidak mencukupi."
+        }
     }
 }
