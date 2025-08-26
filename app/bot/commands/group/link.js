@@ -10,7 +10,7 @@ Command({
   run: async ({ sock, m }) => {
     if (!m.isGroup) return;
     if (!m.isSenderAdmin) return;
-    if (!m.isBotAdmin) return m.reply(__('botNotAdmin'));
+    if (!m.isBotAdmin) return m.reply(__('cmd.botNotAdmin'));
 
     await m.reply(`https://chat.whatsapp.com/${await sock.groupInviteCode(m.chat)}`);
   }

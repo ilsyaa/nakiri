@@ -11,10 +11,10 @@ Command({
   run: async ({ sock, m }) => {
     if (!m.isGroup) return;
     if (!m.isSenderAdmin) return;
-    if (!m.isBotAdmin) return m.reply(__('botNotAdmin'));
+    if (!m.isBotAdmin) return m.reply(__('cmd.botNotAdmin'));
 
     let jid = m.content.textWithoutCommand.trim();
-    if (!jid) return await m.reply(__('group.add.ex', { prefix: m.content.prefix }));
+    if (!jid) return await m.reply(__('cmd.group.add.ex', { prefix: m.content.prefix }));
     jid = jid.includes('@s.whatsapp.net') ? jid : jid + '@s.whatsapp.net';
 
     const response = await sock.groupParticipantsUpdate(m.chat, [jid], 'add');
@@ -25,14 +25,14 @@ Command({
       }
 
       if (res.status == 408) {
-        await m.reply(__('group.add.invited', { jid: res.jid.split('@')[0] }));
+        await m.reply(__('cmd.group.add.invited', { jid: res.jid.split('@')[0] }));
         await m.sendMessage(res.jid, {
           text: 'https://chat.whatsapp.com/' + (await sock.groupInviteCode(m.chat)),
         });
       }
 
       if (res.status == 403) {
-        await m.reply(__('group.add.invited', { jid: res.jid.split('@')[0] }));
+        await m.reply(__('cmd.group.add.invited', { jid: res.jid.split('@')[0] }));
         const { code, expiration } = res.content.content[0].attrs;
         const pp = await sock.profilePictureUrl(m.chat, 'image').catch(() => null);
 
@@ -55,7 +55,7 @@ Command({
       }
 
       if (res.status == 409) {
-        await m.reply(__('group.add.already', { jid: response[0].content.attrs.phone_number.split('@')[0] }));
+        await m.reply(__('cmd.group.add.already', { jid: response[0].content.attrs.phone_number.split('@')[0] }));
       }
     }
   }

@@ -32,7 +32,7 @@ module.exports = {
             data: { strike: participant.strike + 1 }
           });
 
-          await m.reply(__('group.wordblocker.message', {
+          await m.reply(__('cmd.group.wordblocker.message', {
             word: word,
             maxStrike: group.maxStrike,
             strike: participant.strike + 1

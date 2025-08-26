@@ -10,7 +10,7 @@ Command({
   },
   run: async ({ m }) => {
     const body = m.content.textWithoutCommand.trim();
-    if (!body) return m.reply(__('downloader.ytmp3.ex', { command: m.content.command }));
+    if (!body) return m.reply(__('cmd.downloader.ytmp3.ex', { command: m.content.command }));
     
     const url = body;
     const format = 'mp3';

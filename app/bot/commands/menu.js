@@ -7,10 +7,10 @@ Command({
   alias: ['help', 'menu'],
   run: async ({ m }) => {
     let text = '';
-    let label = __('menu.all');
-    text += __('menu.welcome', { name: m.pushName, time: time2() });
+    let label = __('cmd.menu.all');
+    text += __('cmd.menu.welcome', { name: m.pushName, time: time2() });
     text += '\n\n';
-    text += __('menu.description', { command: m.content.prefix + 'start' });
+    text += __('cmd.menu.description', { command: m.content.prefix + 'start' });
     text += '\n\n';
     text += String.fromCharCode(8206).repeat(4001);
     if(m.content.textWithoutCommand) {
@@ -33,7 +33,7 @@ Command({
     }
     text += '\n';
 
-    text += `> ${__('menu.footer', { command: m.content.prefix + 'info' })}`;
+    text += `> ${__('cmd.menu.footer', { command: m.content.prefix + 'info' })}`;
 
     await m.sendMessage(m.chat, { text });
   }
@@ -42,8 +42,8 @@ Command({
 const time2 = () => {
   const hour = DateTime.local().setZone('Asia/Jakarta').hour;
 
-  if (hour >= 5 && hour < 11) return __('menu.time.morning');
-  if (hour >= 11 && hour < 15) return __('menu.time.afternoon');
-  if (hour >= 15 && hour < 18) return __('menu.time.evening');
-  return __('menu.time.night');
+  if (hour >= 5 && hour < 11) return __('cmd.menu.time.morning');
+  if (hour >= 11 && hour < 15) return __('cmd.menu.time.afternoon');
+  if (hour >= 15 && hour < 18) return __('cmd.menu.time.evening');
+  return __('cmd.menu.time.night');
 };

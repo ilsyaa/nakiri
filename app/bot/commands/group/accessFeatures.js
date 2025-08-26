@@ -13,10 +13,10 @@ Command({
 
     const body = m.content.textWithoutCommand.trim();
     const accessAvailable = ['everyone', 'adminonly'];
-    if (!body) return m.reply(__('group.accessFeatures.ex', { command: m.content.command }));
-    if (!accessAvailable.includes(body)) return m.reply(__('group.accessFeatures.ex', { command: m.content.command }));
+    if (!body) return m.reply(__('cmd.group.accessFeatures.ex', { command: m.content.command }));
+    if (!accessAvailable.includes(body)) return m.reply(__('cmd.group.accessFeatures.ex', { command: m.content.command }));
     
     await prisma.group.update({ where: { id: m.db.group.id }, data: { accessFeatures: body }});
-    m.reply(__('group.accessFeatures.success', { accessFeatures: body }));
+    m.reply(__('cmd.group.accessFeatures.success', { accessFeatures: body }));
   }
 });

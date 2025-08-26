@@ -10,9 +10,9 @@ Command({
   run: async ({ sock, m }) => {
     if (!m.isGroup) return;
     if (!m.isSenderAdmin) return;
-    if (!m.isBotAdmin) return m.reply(__('botNotAdmin'));
+    if (!m.isBotAdmin) return m.reply(__('cmd.botNotAdmin'));
 
-    if(!m.quoted && !m.content.mentionedJid.length) return m.reply(__('group.promote.ex', { command: m.content.command }));
+    if(!m.quoted && !m.content.mentionedJid.length) return m.reply(__('cmd.group.promote.ex', { command: m.content.command }));
 
     let jids = [];
     if(m.quoted) jids.push(m.quoted.sender);
@@ -22,7 +22,7 @@ Command({
       await sock.groupParticipantsUpdate(m.chat, [jid], 'promote');
     }
 
-    m.reply(__('group.promote.success', { jids: jids.map(v => '@' + v.split('@')[0]).join(', ') }));
+    m.reply(__('cmd.group.promote.success', { jids: jids.map(v => '@' + v.split('@')[0]).join(', ') }));
   }
 });
 
@@ -36,9 +36,9 @@ Command({
   run: async ({ sock, m }) => {
     if (!m.isGroup) return;
     if (!m.isSenderAdmin) return;
-    if (!m.isBotAdmin) return m.reply(__('botNotAdmin'));
+    if (!m.isBotAdmin) return m.reply(__('cmd.botNotAdmin'));
 
-    if(!m.quoted && !m.content.mentionedJid.length) return m.reply(__('group.demote.ex', { command: m.content.command }));
+    if(!m.quoted && !m.content.mentionedJid.length) return m.reply(__('cmd.group.demote.ex', { command: m.content.command }));
 
     let jids = [];
     if(m.quoted) jids.push(m.quoted.sender);
@@ -48,6 +48,6 @@ Command({
       await sock.groupParticipantsUpdate(m.chat, [jid], 'demote');
     }
 
-    m.reply(__('group.demote.success', { jids: jids.map(v => '@' + v.split('@')[0]).join(', ') }));
+    m.reply(__('cmd.group.demote.success', { jids: jids.map(v => '@' + v.split('@')[0]).join(', ') }));
   }
 });

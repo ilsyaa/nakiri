@@ -9,12 +9,12 @@ Command({
   },
   run: async ({ m }) => {
     const match = /(hp|pc|web|tablet)?\s*(https?:\/\/\S+)/.exec(m.content.textWithoutCommand.trim());
-    if (!match) return m.reply(__('tools.ssweb.ex', { command: m.content.command }));
+    if (!match) return m.reply(__('cmd.tools.ssweb.ex', { command: m.content.command }));
 
     let layout = match[1] || 'web';
     let url = match[2] || null;
 
-    if (!url) return m.reply(__('tools.ssweb.ex', { command: m.content.command }));
+    if (!url) return m.reply(__('cmd.tools.ssweb.ex', { command: m.content.command }));
 
     let width, crop;
     switch (layout) {

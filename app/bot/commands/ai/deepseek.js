@@ -11,7 +11,7 @@ Command({
   run: async ({ m }) => {
     const body = m.content.textWithoutCommand.trim();
 
-    if (!body) return m.reply(__('ai.deepseek.ex', { command: m.content.command }));
+    if (!body) return m.reply(__('cmd.ai.deepseek.ex', { command: m.content.command }));
 
     const together = new Together({
       apiKey: process.env.TOGETHER_API_KEY,

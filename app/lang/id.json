@@ -1,152 +1,159 @@
 {
-    "botNotAdmin": "Bot harus menjadi admin.",
+    "cmd": {
+        "botNotAdmin": "Bot harus menjadi admin.",
+        
+        "menu": {
+            "all": "Semua Menu",
+            "welcome": "*`Hai {name}`*, Selamat {time}.",
+            "description": "Mencari teman baru dengan menggunakan fitur Anonymous Chat seperti di telegram.\nKetik `{command}` untuk memulai mencari teman baru.",
+            "footer": "Untuk informasi lainnya silahkan ketik {command}",
+            "time": {
+                "morning": "Pagi 🌄",
+                "afternoon": "Siang 🌤️",
+                "evening": "Sore 🌇",
+                "night": "Malam 🌃"
+            }
+        },
 
-    "menu": {
-        "all": "Semua Menu",
-        "welcome": "*`Hai {name}`*, Selamat {time}.",
-        "description": "Mencari teman baru dengan menggunakan fitur Anonymous Chat seperti di telegram.\nKetik `{command}` untuk memulai mencari teman baru.",
-        "footer": "Untuk informasi lainnya silahkan ketik {command}",
-        "time": {
-            "morning": "Pagi 🌄",
-            "afternoon": "Siang 🌤️",
-            "evening": "Sore 🌇",
-            "night": "Malam 🌃"
-        }
-    },
+        "ai": {
+            "deepseek": { "ex": "Contoh: {command} hai" }
+        },
 
-    "ai": {
-        "deepseek": { "ex": "Contoh: {command} hai" }
-    },
+        "group": {
+            "add": {
+                "ex": "Contoh: {prefix}add 628517xxxx",
+                "invited": "Undangan telah dikirim ke {jid}.",
+                "already": "@{jid} sudah ada di grup."
+            },
+            "kick": {
+                "ex": "Contoh: {prefix}kick @tag, atau balas pesan seseorang lalu ketik {prefix}kick sebagai caption."
+            },
+            "promote": {
+                "ex":"Contoh: {command} @tag, atau balas pesan seseorang lalu ketik {command} sebagai caption.",
+                "success": "Berhasil mempromosikan {jids} sebagai admin."
+            },
+            "demote": {
+                "ex":"Contoh: {command} @tag, atau balas pesan seseorang lalu ketik {command} sebagai caption.",
+                "success": "Berhasil menurunkan {jids} sebagai admin."
+            },
+            "score": {
+                "ex": "Contoh: {command} enable/disable",
+                "alreadyOn": "Fitur sosial kredit sudah diaktifkan di grup ini.",
+                "alreadyOff": "Fitur sosial kredit sudah dinonaktifkan di grup ini.",
+                "on": "Fitur sosial kredit diaktifkan di grup ini.",
+                "off": "Fitur sosial kredit dinonaktifkan di grup ini.",
+                "reset": "Sosial kredit semua anggota diatur ke 0."
+            },
+            "wordblocker": {
+                "ex": "*WordBlocker* adalah fitur untuk memblokir kata-kata tertentu di grup secara otomatis.\n\n❖ Penggunaan:\n▷ `{command} enable` / `{command} disable` — Mengaktifkan atau menonaktifkan fitur.\n▷ `{command} add <kata>` — Menambahkan kata yang akan diblokir.\n▷ `{command} remove <kata>` — Menghapus kata dari daftar blokir.\n▷ `{command} list` — Menampilkan daftar kata yang diblokir.",
+                "alreadyOn": "Fitur wordblocker sudah diaktifkan di grup ini.",
+                "alreadyOff": "Fitur wordblocker sudah dinonaktifkan di grup ini.",
+                "on": "Fitur wordblocker diaktifkan di grup ini.",
+                "off": "Fitur wordblocker dinonaktifkan di grup ini.",
+                "add": "Kata `{word}` berhasil ditambahkan ke daftar blokir.",
+                "remove": "Kata `{word}` berhasil dihapus dari daftar blokir.",
+                "message": "Kata `{word}` tidak diperbolehkan di grup ini.\n> Kamu telah melakukan {strike} pelanggaran dari total {maxStrike} kesempatan."
+            },
+            "antimention": {
+                "ex": "Contoh: {command} enable/disable",
+                "alreadyOn": "Fitur antiMention sudah diaktifkan di grup ini.",
+                "alreadyOff": "Fitur antiMention sudah dinonaktifkan di grup ini.",
+                "on": "Fitur antiMention diaktifkan di grup ini.",
+                "off": "Fitur antiMention dinonaktifkan di grup ini.",
+                "message":"Dilarang tag grup ini.\n> Kamu telah melakukan {strike} pelanggaran dari total {maxStrike} kesempatan."
+            },
+            "strike": {
+                "ex": "Contoh: {command} 5",
+                "success": "Batas pelanggaran maksimal diatur ke {maxStrike}."
+            },
+            "randomkick": {
+                "ex": "Contoh: {command} 0-10 5\n> Keterangan 0-10 adalah range score dan 5 adalah jumlah orang (random) yang akan di kick.",
+                "success": "Berhasil mengeluarkan {success} dari {totalToKick} orang."
+            },
+            "setlang": {
+                "ex": "Contoh: {command} id\n> Pilihan bahasa: {langs}",
+                "success": "Bahasa grup diatur ke {lang}."
+            },
+            "accessFeatures": {
+                "ex": "Contoh: {command} everyone/adminonly\n`everyone` = Semua orang bisa menggunakan command bot.\n`adminonly` = Hanya admin yang bisa menggunakan command bot.",
+                "success": "Fitur akses diatur ke {accessFeatures}."
+            }
+        },
 
-    "group": {
-        "add": {
-            "ex": "Contoh: {prefix}add 628517xxxx",
-            "invited": "Undangan telah dikirim ke {jid}.",
-            "already": "@{jid} sudah ada di grup."
+        "personal": {
+            "setlang": {
+                "ex": "Contoh: {command} id\n> Pilihan bahasa: {langs}",
+                "success": "Bahasa diatur ke {lang}."
+            },
+            "transfer": {
+                "ex": "Contoh:\n{command} <jumlah> @tag\n{command} <jumlah> <number>\nbalas pesan seseorang lalu ketik {command} <jumlah>",
+                "amountMinTransfer": "Jumlah tidak boleh 0 atau kurang.",
+                "pending": "Transfer sedang diproses.",
+                "success": "Berhasil terkirim."
+            }
         },
-        "kick": {
-            "ex": "Contoh: {prefix}kick @tag, atau balas pesan seseorang lalu ketik {prefix}kick sebagai caption."
-        },
-        "promote": {
-            "ex":"Contoh: {command} @tag, atau balas pesan seseorang lalu ketik {command} sebagai caption.",
-            "success": "Berhasil mempromosikan {jids} sebagai admin."
-        },
-        "demote": {
-            "ex":"Contoh: {command} @tag, atau balas pesan seseorang lalu ketik {command} sebagai caption.",
-            "success": "Berhasil menurunkan {jids} sebagai admin."
-        },
-        "score": {
-            "ex": "Contoh: {command} enable/disable",
-            "alreadyOn": "Fitur sosial kredit sudah diaktifkan di grup ini.",
-            "alreadyOff": "Fitur sosial kredit sudah dinonaktifkan di grup ini.",
-            "on": "Fitur sosial kredit diaktifkan di grup ini.",
-            "off": "Fitur sosial kredit dinonaktifkan di grup ini.",
-            "reset": "Sosial kredit semua anggota diatur ke 0."
-        },
-        "wordblocker": {
-            "ex": "*WordBlocker* adalah fitur untuk memblokir kata-kata tertentu di grup secara otomatis.\n\n❖ Penggunaan:\n▷ `{command} enable` / `{command} disable` — Mengaktifkan atau menonaktifkan fitur.\n▷ `{command} add <kata>` — Menambahkan kata yang akan diblokir.\n▷ `{command} remove <kata>` — Menghapus kata dari daftar blokir.\n▷ `{command} list` — Menampilkan daftar kata yang diblokir.",
-            "alreadyOn": "Fitur wordblocker sudah diaktifkan di grup ini.",
-            "alreadyOff": "Fitur wordblocker sudah dinonaktifkan di grup ini.",
-            "on": "Fitur wordblocker diaktifkan di grup ini.",
-            "off": "Fitur wordblocker dinonaktifkan di grup ini.",
-            "add": "Kata `{word}` berhasil ditambahkan ke daftar blokir.",
-            "remove": "Kata `{word}` berhasil dihapus dari daftar blokir.",
-            "message": "Kata `{word}` tidak diperbolehkan di grup ini.\n> Kamu telah melakukan {strike} pelanggaran dari total {maxStrike} kesempatan."
-        },
-        "antimention": {
-            "ex": "Contoh: {command} enable/disable",
-            "alreadyOn": "Fitur antiMention sudah diaktifkan di grup ini.",
-            "alreadyOff": "Fitur antiMention sudah dinonaktifkan di grup ini.",
-            "on": "Fitur antiMention diaktifkan di grup ini.",
-            "off": "Fitur antiMention dinonaktifkan di grup ini.",
-            "message":"Dilarang tag grup ini.\n> Kamu telah melakukan {strike} pelanggaran dari total {maxStrike} kesempatan."
-        },
-        "strike": {
-            "ex": "Contoh: {command} 5",
-            "success": "Batas pelanggaran maksimal diatur ke {maxStrike}."
-        },
-        "randomkick": {
-            "ex": "Contoh: {command} 0-10 5\n> Keterangan 0-10 adalah range score dan 5 adalah jumlah orang (random) yang akan di kick.",
-            "success": "Berhasil mengeluarkan {success} dari {totalToKick} orang."
-        },
-        "setlang": {
-            "ex": "Contoh: {command} id\n> Pilihan bahasa: {langs}",
-            "success": "Bahasa grup diatur ke {lang}."
-        },
-        "accessFeatures": {
-            "ex": "Contoh: {command} everyone/adminonly\n`everyone` = Semua orang bisa menggunakan command bot.\n`adminonly` = Hanya admin yang bisa menggunakan command bot.",
-            "success": "Fitur akses diatur ke {accessFeatures}."
-        }
-    },
 
-    "personal": {
-        "setlang": {
-            "ex": "Contoh: {command} id\n> Pilihan bahasa: {langs}",
-            "success": "Bahasa diatur ke {lang}."
+        "join": {
+            "ex": "Contoh: {prefix}join https://chat.whatsapp.com/xxxxxx",
+            "success": "Berhasil masuk ke grup.",
+            "failed": "Gagal masuk ke grup: {message}"
         },
-        "transfer": {
-            "ex": "Contoh:\n{command} <jumlah> @tag\n{command} <jumlah> <number>\nbalas pesan seseorang lalu ketik {command} <jumlah>",
-            "amountMinTransfer": "Jumlah tidak boleh 0 atau kurang.",
-            "pending": "Transfer sedang diproses.",
-            "success": "Berhasil terkirim."
+
+        "downloader": {
+            "fb": {
+                "ex": "Contoh: {command} https://www.facebook.com/xxxxxx"
+            },
+            "ig": {
+                "ex": "Contoh: {command} https://www.instagram.com/xxxxxx"
+            },
+            "tt": {
+                "ex": "Contoh: {command} https://www.tiktok.com/@xxxxxx"
+            },
+            "ytmp3": {
+                "ex": "Contoh: {command} https://www.youtube.com/watch?v=xxxxxx"
+            },
+            "ytdl": {
+                "ex": "Contoh: {command} 144p https://www.youtube.com/watch?v=xxxxxx\nResolusi yang tersedia: {formats}"
+            }
+        },
+
+        "owner": {
+            "prefix": {
+                "ex": "❖ Penggunaan:\n▷ `{command} list` — Menampilkan daftar prefix.\n▷ `{command} add <prefix>` — Menambahkan prefix.\n▷ `{command} remove <prefix>` — Menghapus prefix.",
+                "added": "Prefix `{prefix}` berhasil ditambahkan.",
+                "removed": "Prefix `{prefix}` berhasil dihapus."
+            },
+            "owner": {
+                "ex": "❖ Penggunaan:\n▷ `{command} list` — Menampilkan daftar owner.\n▷ `{command} add <number>` — Menambahkan owner.\n▷ `{command} remove <number>` — Menghapus owner.",
+                "added": "`{number}` berhasil ditambahkan.",
+                "removed": "`{number}` berhasil dihapus."
+            }
+        },
+
+        "tools": {
+            "mediaToSticker": {
+                "ex" : "Contoh: {command} <reply ke gambar/video/url>\nUntuk custom packname dan author: {command} packname|author",
+                "failedDownloadSticker": "Sticker rusak atau tidak ditemukan.",
+                "typeNotSupported": "Jenis media tidak didukung.",
+                "failedFetchUrl": "Gagal mengambil media."
+            },
+            "stickerToMedia": {
+                "ex" : "Contoh: {command} <reply ke sticker>",
+                "failedDownloadSticker": "Sticker rusak atau tidak ditemukan."
+            },
+            "ssweb": {
+                "ex" : "Contoh: {command} <url>"
+            }
+        },
+
+        "fun": {
+            "anonymousChat" : {
+                "onlyPrivate": "_Tidak bisa di group. Silahkan gunakan di private chat._"
+            }
         }
     },
     
-    "join": {
-        "ex": "Contoh: {prefix}join https://chat.whatsapp.com/xxxxxx",
-        "success": "Berhasil masuk ke grup.",
-        "failed": "Gagal masuk ke grup: {message}"
-    },
-
-    "downloader": {
-        "fb": {
-            "ex": "Contoh: {command} https://www.facebook.com/xxxxxx"
-        },
-        "ig": {
-            "ex": "Contoh: {command} https://www.instagram.com/xxxxxx"
-        },
-        "tt": {
-            "ex": "Contoh: {command} https://www.tiktok.com/@xxxxxx"
-        },
-        "ytmp3": {
-            "ex": "Contoh: {command} https://www.youtube.com/watch?v=xxxxxx"
-        },
-        "ytdl": {
-            "ex": "Contoh: {command} 144p https://www.youtube.com/watch?v=xxxxxx\nResolusi yang tersedia: {formats}"
-        }
-    },
-
-    "owner": {
-        "prefix": {
-            "ex": "❖ Penggunaan:\n▷ `{command} list` — Menampilkan daftar prefix.\n▷ `{command} add <prefix>` — Menambahkan prefix.\n▷ `{command} remove <prefix>` — Menghapus prefix.",
-            "added": "Prefix `{prefix}` berhasil ditambahkan.",
-            "removed": "Prefix `{prefix}` berhasil dihapus."
-        },
-        "owner": {
-            "ex": "❖ Penggunaan:\n▷ `{command} list` — Menampilkan daftar owner.\n▷ `{command} add <number>` — Menambahkan owner.\n▷ `{command} remove <number>` — Menghapus owner.",
-            "added": "`{number}` berhasil ditambahkan.",
-            "removed": "`{number}` berhasil dihapus."
-        }
-    },
-
-    "tools": {
-        "mediaToSticker": {
-            "ex" : "Contoh: {command} <reply ke gambar/video/url>\nUntuk custom packname dan author: {command} packname|author",
-            "failedDownloadSticker": "Sticker rusak atau tidak ditemukan.",
-            "typeNotSupported": "Jenis media tidak didukung.",
-            "failedFetchUrl": "Gagal mengambil media."
-        },
-        "stickerToMedia": {
-            "ex" : "Contoh: {command} <reply ke sticker>",
-            "failedDownloadSticker": "Sticker rusak atau tidak ditemukan."
-        },
-        "ssweb": {
-            "ex" : "Contoh: {command} <url>"
-        }
-    },
-
     "anonymousChat": {
-        "onlyPrivate": "_Tidak bisa di group. Silahkan gunakan di private chat._",
         "example": "_`/start` untuk memulai mencari partner ngobrol._",
         "alreadyInQueue": "_Sedang mencari partner..._\n\n> `/stop` untuk menghentikan pencarian.",
         "alreadyInChat": "_Sedang dalam obrolan._\n\n> `/stop` untuk menghentikan obrolan.\n> `/skip` untuk mencari partner baru.",
@@ -160,16 +167,14 @@
         "messageTypeNotSupported": "_Tipe pesan yang di perbolehkan hanya teks, sticker, atau gambar._",
         "failedToDownloadSticker": "_Sticker gagal terkirim._"
     },
-
+    
     "currency": {
-        "util": {
-            "invalidJid": "JID tidak valid.",
-            "invalidReminingMines": "Harus lebih besar dari 0.",
-            "alreadyMining": "Proses penambangan sedang berjalan.",
-            "invalidAmount": "Jumlah tidak valid.",
-            "sameJid": "Tidak bisa mengirim ke diri sendiri.",
-            "userNotFound": "Pengguna tidak terdaftar.",
-            "insufficientBalance": "Saldo tidak mencukupi."
-        }
+        "invalidJid": "JID tidak valid.",
+        "invalidReminingMines": "Harus lebih besar dari 0.",
+        "alreadyMining": "Proses penambangan sedang berjalan.",
+        "invalidAmount": "Jumlah tidak valid.",
+        "sameJid": "Tidak bisa mengirim ke diri sendiri.",
+        "userNotFound": "Pengguna tidak terdaftar.",
+        "insufficientBalance": "Saldo tidak mencukupi."
     }
 }

@@ -8,8 +8,8 @@ Command({
   run: async ({ m }) => {
     try {
       let url = m.content.textWithoutCommand.trim();
-      if (!url) return m.reply(__('downloader.github.ex', { command: m.content.command }));
-      if (!url.startsWith('https://github.com/')) return m.reply(__('downloader.github.ex', { command: m.content.command }));
+      if (!url) return m.reply(__('cmd.downloader.github.ex', { command: m.content.command }));
+      if (!url.startsWith('https://github.com/')) return m.reply(__('cmd.downloader.github.ex', { command: m.content.command }));
       if (url.endsWith('.git')) url = url.slice(0, -4);
     
       const branch = (url.match(/github\.com\/[^/]+\/[^/]+(?:\/tree\/([^/]+))?/)?.[1]) || 'master';

@@ -10,9 +10,9 @@ Command({
   run: async ({ sock, m }) => {
     if (!m.isGroup) return;
     if (!m.isSenderAdmin) return;
-    if (!m.isBotAdmin) return m.reply(__('botNotAdmin'));
+    if (!m.isBotAdmin) return m.reply(__('cmd.botNotAdmin'));
 
-    if(!m.quoted && !m.content.mentionedJid.length) return m.reply(__('group.kick.ex', { prefix: m.content.prefix }));
+    if(!m.quoted && !m.content.mentionedJid.length) return m.reply(__('cmd.group.kick.ex', { prefix: m.content.prefix }));
 
     let jids = [];
     if(m.quoted) jids.push(m.quoted.sender);

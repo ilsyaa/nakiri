@@ -11,7 +11,7 @@ Command({
   run: async ({ m }) => {
     if (!m.isGroup) return;
     if (!m.isSenderAdmin) return;
-    if (!m.isBotAdmin) return m.reply(__('botNotAdmin'));
+    if (!m.isBotAdmin) return m.reply(__('cmd.botNotAdmin'));
 
     const body = m.content.textWithoutCommand.trim();
     const regex = /(\d+)-(\d+)\s(\d+)/;
@@ -23,7 +23,7 @@ Command({
       maxScore = parseInt(match[2], 10);
       totalToKick = parseInt(match[3], 10);
     } else {
-      return m.reply(__('group.randomkick.ex', { command: m.content.command }));
+      return m.reply(__('cmd.group.randomkick.ex', { command: m.content.command }));
     }
 
     const participantsPrisma = await prisma.GroupParticipant.findMany({
@@ -62,6 +62,6 @@ Command({
       }
     }
     
-    m.reply(__('group.randomkick.success', { success, failed, totalToKick }));
+    m.reply(__('cmd.group.randomkick.success', { success, failed, totalToKick }));
   }
 });

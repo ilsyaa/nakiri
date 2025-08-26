@@ -14,7 +14,7 @@ Command({
     const url = body.match(/(https?:\/\/[^\s]+)/g)?.[0];
     let format = body.match(/(144p|240p|360p|480p)/g)?.[0] || '360p';
     
-    if (!url || !formats.includes(format)) return m.reply(__('downloader.ytdl.ex', { command: m.content.command, formats: formats.join(', ') }));
+    if (!url || !formats.includes(format)) return m.reply(__('cmd.downloader.ytdl.ex', { command: m.content.command, formats: formats.join(', ') }));
 
     m.react('⌛');
 

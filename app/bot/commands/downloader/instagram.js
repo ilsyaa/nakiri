@@ -10,7 +10,7 @@ Command({
   },
   run: async ({ m }) => {
     const body = m.content.textWithoutCommand.trim();
-    if (!body) return m.reply(__('downloader.ig.ex', { command: m.content.command }));
+    if (!body) return m.reply(__('cmd.downloader.ig.ex', { command: m.content.command }));
 
     const res = await snapsave(body);
 

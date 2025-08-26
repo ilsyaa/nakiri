@@ -28,7 +28,7 @@ Command({
       sticker = await videoToWebp(media);  
     } else if (m.quoted && m.quoted.content.isSticker) {
       sticker = await m.quoted.downloadMedia();
-      if (!sticker) return m.reply(__('tools.mediaToSticker.failedDownloadSticker'));
+      if (!sticker) return m.reply(__('cmd.tools.mediaToSticker.failedDownloadSticker'));
     } else if (m.content.textWithoutCommand.startsWith('https://')) {
       try {
         const { data, headers } = await axios.get(m.content.textWithoutCommand, { responseType: 'arraybuffer' });
@@ -41,15 +41,15 @@ Command({
           sticker = await videoToWebp(data);
           break;
         default:
-          return m.reply(__('tools.mediaToSticker.typeNotSupported'));
+          return m.reply(__('cmd.tools.mediaToSticker.typeNotSupported'));
         }
       } catch (e) {
         console.error(e);
-        return m.reply(__('tools.mediaToSticker.failedFetchUrl'));
+        return m.reply(__('cmd.tools.mediaToSticker.failedFetchUrl'));
       }
     }
 
-    if (!sticker) return m.reply(__('tools.mediaToSticker.ex', { command: m.content.command }));
+    if (!sticker) return m.reply(__('cmd.tools.mediaToSticker.ex', { command: m.content.command }));
 
     sticker = await writeExif(sticker, { packname: packname || 'Nakiri Sticker Maker', author: author || m?.pushName || 'Nakiri' });
     await m.sendMessage(m.chat, { sticker }, { quoted: m });

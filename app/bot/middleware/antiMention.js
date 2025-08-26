@@ -21,7 +21,7 @@ module.exports = {
         data: { strike: participant.strike + 1 }
       });
 
-      await m.reply(__('group.antimention.message', {
+      await m.reply(__('cmd.group.antimention.message', {
         maxStrike: group.maxStrike,
         strike: participant.strike + 1
       }));

@@ -9,13 +9,13 @@ Command({
   },
   run: async ({ sock, m }) => {
     const link = m.content.textWithoutCommand.trim();
-    if (!link) return m.reply(__('join.ex', { prefix: m.content.prefix }));
+    if (!link) return m.reply(__('cmd.join.ex', { prefix: m.content.prefix }));
     const [_, code] = link.match(/https?:\/\/chat.whatsapp.com\/(.*)/) || [null, null];
 
     await sock.groupAcceptInvite(code).then(() => {
-      m.reply(__('join.success'));
+      m.reply(__('cmd.join.success'));
     }).catch((e) => {
-      m.reply(__('join.failed', { message: e.message }));
+      m.reply(__('cmd.join.failed', { message: e.message }));
     });
   }
 });

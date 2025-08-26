@@ -16,7 +16,7 @@ Command({
     const body1 = firstSpace === -1 ? text : text.slice(0, firstSpace);
     const body2 = firstSpace === -1 ? '' : text.slice(firstSpace + 1);
 
-    if (!body1) return m.reply(__('owner.owner.ex', { command: m.content.command }));
+    if (!body1) return m.reply(__('cmd.owner.owner.ex', { command: m.content.command }));
 
     switch(body1.toLowerCase()) {
     case 'list':
@@ -28,20 +28,20 @@ Command({
     case 'add':
     case 'set':
     case 'push':
-      if (!body2) return m.reply(__('owner.owner.ex', { command: m.content.command }));
+      if (!body2) return m.reply(__('cmd.owner.owner.ex', { command: m.content.command }));
       await prisma.Bot.update({ where: { id: m.db.bot.id }, data: { owners: [...m.db.bot.owners, body2] } });
       m.db.bot.clearCache();
-      m.reply(__('owner.owner.added', { number: body2 }));
+      m.reply(__('cmd.owner.owner.added', { number: body2 }));
       break;
     case 'remove':
     case 'del':
-      if (!body2) return m.reply(__('owner.owner.ex', { command: m.content.command }));
+      if (!body2) return m.reply(__('cmd.owner.owner.ex', { command: m.content.command }));
       await prisma.Bot.update({ where: { id: m.db.bot.id }, data: { owners: m.db.bot.owners.filter(v => v !== body2) } });
       m.db.bot.clearCache();
-      m.reply(__('owner.owner.removed', { number: body2 }));
+      m.reply(__('cmd.owner.owner.removed', { number: body2 }));
       break;
     default:
-      m.reply(__('owner.owner.ex', { command: m.content.command }));
+      m.reply(__('cmd.owner.owner.ex', { command: m.content.command }));
     }
 
   }

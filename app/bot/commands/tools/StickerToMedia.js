@@ -16,10 +16,10 @@ Command({
     } else if (m.content.isSticker) {
       mediaBuffer = await m.downloadMedia();
     } else {
-      return m.reply(__('tools.stickerToMedia.ex', { command: m.content.command }));
+      return m.reply(__('cmd.tools.stickerToMedia.ex', { command: m.content.command }));
     }
 
-    if (!mediaBuffer) return m.reply(__('tools.stickerToMedia.failedDownloadSticker'));
+    if (!mediaBuffer) return m.reply(__('cmd.tools.stickerToMedia.failedDownloadSticker'));
 
     await m.sendMessage(m.chat, { image: mediaBuffer }, { quoted: m });
   }
@@ -40,10 +40,10 @@ Command({
 //     } else if (m.content.isSticker) {
 //       mediaBuffer = await m.downloadMedia();
 //     } else {
-//       return m.reply(__('tools.stickerToMedia.video.ex', { command: m.content.command }));
+//       return m.reply(__('cmd.tools.stickerToMedia.video.ex', { command: m.content.command }));
 //     }
 
-//     if (!mediaBuffer) return m.reply(__('tools.stickerToMedia.failedDownloadSticker'));
+//     if (!mediaBuffer) return m.reply(__('cmd.tools.stickerToMedia.failedDownloadSticker'));
 
 //     await m.sendMessage(m.chat, { video: await webpToVideo(mediaBuffer) }, { quoted: m });
 //   }

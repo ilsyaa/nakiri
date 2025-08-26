@@ -17,11 +17,11 @@ Command({
     if (m.quoted) toJid = m.quoted.sender;
     if (to) toJid = to;
 
-    if (!toJid) return m.reply(__('personal.transfer.ex', { command: m.content.command }));
+    if (!toJid) return m.reply(__('cmd.personal.transfer.ex', { command: m.content.command }));
 
     if (!toJid.includes('@')) toJid = toJid + '@s.whatsapp.net';
 
-    if (amount <= 1) return m.reply(__('personal.transfer.amountMinTransfer'));
+    if (amount <= 1) return m.reply(__('cmd.personal.transfer.amountMinTransfer'));
 
     try {
       const transaction = await currencyInstance.transfer({ fromJid: m.sender, toJid, amount: Number(amount) });
@@ -30,7 +30,7 @@ Command({
         message: m.message,
         content: m.content,
       });
-      if (currencyInstance.minerMap.size == 0) return m.reply(__('personal.transfer.pending'));
+      if (currencyInstance.minerMap.size == 0) return m.reply(__('cmd.personal.transfer.pending'));
     } catch (e) {
       console.log(e.message);
     }

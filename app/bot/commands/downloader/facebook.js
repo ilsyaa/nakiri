@@ -10,8 +10,8 @@ Command({
   },
   run: async ({ m }) => {
     const body = m.content.textWithoutCommand.trim();
-    if (!body) return m.reply(__('downloader.fb.ex', { command: m.content.command }));
-    // if (!(/^(https?:\/\/)?(www\.|m\.|web\.|l\.)?(facebook\.com|fb\.me|fb\.watch)(\/[\w\-\.]*)*(\/photo\.php\?.*)?(\/posts\/\d+)?(\/videos\/\d+)?(\?[\w=&%-]*)?(#.*)?$/i).test(body)) return m.reply(__('downloader.fb.ex', { command: m.content.command }));
+    if (!body) return m.reply(__('cmd.downloader.fb.ex', { command: m.content.command }));
+    // if (!(/^(https?:\/\/)?(www\.|m\.|web\.|l\.)?(facebook\.com|fb\.me|fb\.watch)(\/[\w\-\.]*)*(\/photo\.php\?.*)?(\/posts\/\d+)?(\/videos\/\d+)?(\?[\w=&%-]*)?(#.*)?$/i).test(body)) return m.reply(__('cmd.downloader.fb.ex', { command: m.content.command }));
 
     const res = await snapsave(body);
 

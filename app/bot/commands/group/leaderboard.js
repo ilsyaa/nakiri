@@ -11,7 +11,7 @@ Command({
   run: async ({ m }) => {
     if (!m.isGroup) return;
     if (!m.isSenderAdmin) return;
-    if (!m.isBotAdmin) return m.reply(__('botNotAdmin'));
+    if (!m.isBotAdmin) return m.reply(__('cmd.botNotAdmin'));
 
     const participantsPrisma = await prisma.GroupParticipant.findMany({
       where: { groupId: m.db.group.groupId },

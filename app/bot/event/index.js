@@ -58,7 +58,7 @@ module.exports = async function ({
       for (const transaction of event.transactions) {
         const m = currencyInstance.messageHistoryMap.get(transaction.id);
         if (m) {
-          let text = __('personal.transfer.success');
+          let text = __('cmd.personal.transfer.success');
           await sock.sendMessage(m.key.remoteJid, { text }, { quoted: m, ephemeralExpiration: m.content.expiration });
           currencyInstance.messageHistoryMap.delete(transaction.id);
         }
