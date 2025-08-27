@@ -12,7 +12,7 @@ class Currency {
     this.isProcessing = false;
     this.timeoutMiner = null;
     this.lastMinerIndex = 0;
-    this.MINING_TIMEOUT_MINUTES = 1;
+    this.MINING_TIMEOUT_MINUTES = 10;
     this.PRECISION_MULTIPLIER = 100000000;
     this.MIN_REWARD = 0.00000001;
     this.ev = new EventEmitter();
@@ -326,11 +326,9 @@ class Currency {
    */
   scheduleNextMining(minerMap) {
     if (this.timeoutMiner) return;
-    console.log('Scheduling next mining cycle...');
 
     this.timeoutMiner = setTimeout(async () => {
       try {
-        console.log('Processing reward supply...');
         let reward = 0;
   
         await prisma.$transaction(async (tx) => {
@@ -347,6 +345,10 @@ class Currency {
         this.timeoutMiner = null;
   
         minerMap.remainingMines = minerMap.remainingMines - 1;
+        minerMap.history.push({
+          type: 'reward',
+          reward: this.roundAmount(reward),
+        });
         this.minerMap.set(minerMap.jid, minerMap);
   
         if (minerMap.remainingMines == 0) {
