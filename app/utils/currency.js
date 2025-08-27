@@ -471,6 +471,38 @@ class Currency {
   }
 
   /**
+   * Get transaction history
+   * @param {string} jid - JID of the user
+   * @param {number} limit - Number of transactions to retrieve
+   * @returns {Promise<Object[]>}
+   */
+  async getHistory({ jid = null, page = 1, limit = 10 }) {
+    const skipCount = (page - 1) * limit;
+
+    try {
+      const whereClause = jid
+        ? {
+          OR: [
+            { fromAddress: jid },
+            { toAddress: jid },
+          ],
+        }
+        : {};
+
+      const transactions = await prisma.transaction.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' },
+        skip: skipCount,
+        take: limit,
+      });
+
+      return transactions;
+    } catch (error) {
+      throw new Error('[CC] Failed to retrieve transaction history: ' + error);
+    }
+  }
+
+  /**
    * Cleanup resources on shutdown
    */
   cleanup() {

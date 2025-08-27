@@ -120,6 +120,7 @@ model Transaction {
   toUser    User?   @relation("ReceivedTransactions", fields: [toAddress], references: [jid])
   
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   
   @@map("transactions")
 }

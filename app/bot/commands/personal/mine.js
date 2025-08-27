@@ -5,9 +5,12 @@ Command({
   name: 'bank-mine',
   description: 'Mining Coin.',
   alias: ['mining', 'mine'],
+  tags : {
+    label : 'personal'
+  },
   run: async ({ m }) => {
     try {
-      await currencyInstance.mine({ jid: m.sender, remainingMines: 5, m });
+      await currencyInstance.mine({ jid: m.sender, remainingMines: 1, m });
       currencyInstance.messageHistoryMap.set(m.sender, {
         key: m.key,
         message: m.message,
