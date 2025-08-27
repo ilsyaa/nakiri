@@ -33,6 +33,7 @@ Command({
       if (currencyInstance.minerMap.size == 0) return m.reply(__('cmd.personal.transfer.pending'));
     } catch (e) {
       console.log(e.message);
+      return m.reply(e.message);
     }
   }
 });

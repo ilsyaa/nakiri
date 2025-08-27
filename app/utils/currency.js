@@ -73,15 +73,15 @@ class Currency {
   async transfer({ fromJid, toJid, amount }) {
     // Input validation
     if (!isJidUser(fromJid) || !isJidUser(toJid)) {
-      throw new Error(__('currency.util.invalidJid'));
+      throw new Error(__('currency.invalidJid'));
     }
 
     if (typeof amount !== 'number' || amount <= 0 || !isFinite(amount)) {
-      throw new Error(__('currency.util.invalidAmount'));
+      throw new Error(__('currency.invalidAmount'));
     }
 
     if (fromJid === toJid) {
-      throw new Error(__('currency.util.sameJid'));
+      throw new Error(__('currency.sameJid'));
     }
 
     try {
@@ -93,14 +93,14 @@ class Currency {
         ]);
 
         if (!fromUser || !toUser) {
-          throw new Error(__('currency.util.userNotFound'));
+          throw new Error(__('currency.userNotFound'));
         }
 
         const fee = this.roundAmount(amount * this.transferFee);
         const totalDeduct = this.roundAmount(amount + fee);
 
         if (fromUser.balance < totalDeduct) {
-          throw new Error(__('currency.util.insufficientBalance'));
+          throw new Error(__('currency.insufficientBalance'));
         }
 
         // Create transaction record
@@ -157,21 +157,21 @@ class Currency {
    */
   async mine({ jid, remainingMines = 1 }) {
     if (!isJidUser(jid)) {
-      throw new Error(__('currency.util.invalidJid'));
+      throw new Error(__('currency.invalidJid'));
     }
 
     if (typeof remainingMines !== 'number' || remainingMines < 1) {
-      throw new Error(__('currency.util.invalidReminingMines'));
+      throw new Error(__('currency.invalidReminingMines'));
     }
 
     if (this.minerMap.has(jid)) {
-      throw new Error(__('currency.util.alreadyMining'));
+      throw new Error(__('currency.alreadyMining'));
     }
 
     try {
       const user = await prisma.user.findUnique({ where: { jid } });
       if (!user) {
-        throw new Error(__('currency.util.userNotFound'));
+        throw new Error(__('currency.userNotFound'));
       }
 
       this.minerMap.set(jid, {
@@ -275,7 +275,7 @@ class Currency {
         });
 
         if (!minerPrisma) {
-          throw new Error(__('currency.util.userNotFound'));
+          throw new Error(__('currency.userNotFound'));
         }
 
         let totalReward = this.roundAmount(totalFee);
@@ -429,7 +429,7 @@ class Currency {
    */
   async calculateSupplyReward(tx) {
     if (this.metadata.currentSupply >= this.metadata.maxSupply) {
-      throw new Error(__('currency.util.maxSupply'));
+      throw new Error(__('currency.maxSupply'));
     }
 
     const reward = await this.getCurrentReward();
