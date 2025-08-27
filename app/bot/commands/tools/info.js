@@ -18,7 +18,7 @@ Command({
     let text = '*`❖ BOT`*\n';
     text += `▷ Total Group : ${Object.keys(await sock.groupFetchAllParticipating()).length.toLocaleString()}\n`;
     text += `▷ Registered User : ${await prisma.User.count()}\n`;
-    text += `▷ Prefix : ${m.db.bot.prefixs.join(' ')}\n`;
+    text += `▷ Prefix : ${m.db.bot.prefixes.join(' ')}\n`;
     text += '\n';
     text += '*`❖ Anonymous Chat`*\n';
     text += `▷ User In Queue : ${info.users.inQueue.toLocaleString()}\n`;

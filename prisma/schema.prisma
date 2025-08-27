@@ -1,32 +1,32 @@
 generator client {
-    provider = "prisma-client-js"
-    output   = "../app/prisma"
+  provider = "prisma-client-js"
+  output   = "../app/prisma"
 }
 
 datasource db {
-    provider = "mongodb"
-    url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 model DeviceAuth {
-    id      String @id @default(auto()) @map("_id") @db.ObjectId
-    session String
-    key     String
-    value   Json?
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  session String
+  key     String
+  value   Json?
 
-    @@unique([session, key])
-    @@index([session])
-    @@map("device_auths")
+  @@unique([session, key])
+  @@index([session])
+  @@map("device_auths")
 }
 
 model Bot {
-    id                String @id @default(auto()) @map("_id") @db.ObjectId
-    prefixs           Json
-    owners            Json
-    createdAt         DateTime @default(now())
-    updatedAt         DateTime @updatedAt
+  id                String @id @default(auto()) @map("_id") @db.ObjectId
+  prefixes          Json
+  owners            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-    @@map("bots")
+  @@map("bots")
 }
 
 // --- start groups model ---
@@ -37,27 +37,27 @@ enum accessFeatures {
 }
 
 model Group {
-    id                String         @id @default(auto()) @map("_id") @db.ObjectId
-    groupId           String
-    subject           String
-    visible           Boolean        @default(false)
-    link              String         @default("")
-    publicFeatures    Json           @default("[]")
-    accessFeatures    accessFeatures @default(everyone)
-    joinApprovalMode  Boolean
-    maxStrike         Int
-    wordBlocker       Json
-    antiMention       Json
-    welcome           Json
-    activityScore     Boolean
-    lang              String         @default("en")
-    createdAt         DateTime       @default(now())
-    updatedAt         DateTime       @updatedAt
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  groupId           String
+  subject           String
+  visible           Boolean        @default(false)
+  link              String         @default("")
+  publicFeatures    Json           @default("[]")
+  accessFeatures    accessFeatures @default(everyone)
+  joinApprovalMode  Boolean
+  maxStrike         Int
+  wordBlocker       Json
+  antiMention       Json
+  welcome           Json
+  activityScore     Boolean
+  lang              String         @default("en")
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
-    participants      GroupParticipant[]
+  participants      GroupParticipant[]
 
-    @@unique([groupId])
-    @@map("groups")
+  @@unique([groupId])
+  @@map("groups")
 }
 
 model GroupParticipant {
@@ -103,6 +103,7 @@ model User {
 
   sentTransactions     Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
+  Note Note[]
   
   @@unique([jid])
   @@map("users")
@@ -136,4 +137,20 @@ model CurrencyMetadata {
   updatedAt       DateTime @updatedAt
 
   @@map("currency_metadatas")
+}
+
+model Note {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  code      String @unique
+  title     String
+  content   String
+  authorJid String
+  password  String?
+
+  author User @relation(fields: [authorJid], references: [jid])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notes")
 }

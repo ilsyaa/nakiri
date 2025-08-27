@@ -53,7 +53,7 @@ const USER_DEFAULT = {
 };
 
 const BOT_DEFAULT = {
-  prefixs: ['/', '#', '!'],
+  prefixes: ['/', '#', '!'],
   owners: [ '6285174902345' ],
 };
 

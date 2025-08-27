@@ -13,17 +13,17 @@ module.exports = {
 
     let command = false;
 
-    if (m.db.bot.prefixs.includes(m.content.prefix) && m.content.commandWithoutPrefix == 'start') {
+    if (m.db.bot.prefixes.includes(m.content.prefix) && m.content.commandWithoutPrefix == 'start') {
       await anonchat.start(m.sender);
       command = true;
     }
 
-    if (m.db.bot.prefixs.includes(m.content.prefix) && m.content.commandWithoutPrefix == 'stop') {
+    if (m.db.bot.prefixes.includes(m.content.prefix) && m.content.commandWithoutPrefix == 'stop') {
       await anonchat.stop(m.sender);
       command = true;
     }
 
-    if (m.db.bot.prefixs.includes(m.content.prefix) && m.content.commandWithoutPrefix == 'skip') {
+    if (m.db.bot.prefixes.includes(m.content.prefix) && m.content.commandWithoutPrefix == 'skip') {
       await anonchat.skip(m.sender);
       command = true;
     }

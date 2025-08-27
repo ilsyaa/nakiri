@@ -21,7 +21,7 @@ model DeviceAuth {
 
 model Bot {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  prefixs   Json
+  prefixes  Json
   owners    Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -103,6 +103,7 @@ model User {
 
   sentTransactions     Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
+  Note                 Note[]
 
   @@unique([jid])
   @@map("users")
@@ -120,6 +121,7 @@ model Transaction {
   toUser   User? @relation("ReceivedTransactions", fields: [toAddress], references: [jid])
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("transactions")
 }
@@ -135,4 +137,20 @@ model CurrencyMetadata {
   updatedAt       DateTime @updatedAt
 
   @@map("currency_metadatas")
+}
+
+model Note {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  code      String  @unique
+  title     String
+  content   String
+  authorJid String
+  password  String?
+
+  author User @relation(fields: [authorJid], references: [jid])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notes")
 }

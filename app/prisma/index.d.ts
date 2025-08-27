@@ -53,6 +53,11 @@ export type Transaction = $Result.DefaultSelection<Prisma.$TransactionPayload>
  * 
  */
 export type CurrencyMetadata = $Result.DefaultSelection<Prisma.$CurrencyMetadataPayload>
+/**
+ * Model Note
+ * 
+ */
+export type Note = $Result.DefaultSelection<Prisma.$NotePayload>
 
 /**
  * Enums
@@ -242,6 +247,16 @@ export class PrismaClient<
     * ```
     */
   get currencyMetadata(): Prisma.CurrencyMetadataDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.note`: Exposes CRUD operations for the **Note** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Notes
+    * const notes = await prisma.note.findMany()
+    * ```
+    */
+  get note(): Prisma.NoteDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -689,7 +704,8 @@ export namespace Prisma {
     GroupTag: 'GroupTag',
     User: 'User',
     Transaction: 'Transaction',
-    CurrencyMetadata: 'CurrencyMetadata'
+    CurrencyMetadata: 'CurrencyMetadata',
+    Note: 'Note'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -708,7 +724,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "deviceAuth" | "bot" | "group" | "groupParticipant" | "groupTag" | "user" | "transaction" | "currencyMetadata"
+      modelProps: "deviceAuth" | "bot" | "group" | "groupParticipant" | "groupTag" | "user" | "transaction" | "currencyMetadata" | "note"
       txIsolationLevel: never
     }
     model: {
@@ -1304,6 +1320,80 @@ export namespace Prisma {
           }
         }
       }
+      Note: {
+        payload: Prisma.$NotePayload<ExtArgs>
+        fields: Prisma.NoteFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NoteFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NoteFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload>
+          }
+          findFirst: {
+            args: Prisma.NoteFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NoteFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload>
+          }
+          findMany: {
+            args: Prisma.NoteFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload>[]
+          }
+          create: {
+            args: Prisma.NoteCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload>
+          }
+          createMany: {
+            args: Prisma.NoteCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.NoteDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload>
+          }
+          update: {
+            args: Prisma.NoteUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload>
+          }
+          deleteMany: {
+            args: Prisma.NoteDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NoteUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.NoteUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotePayload>
+          }
+          aggregate: {
+            args: Prisma.NoteAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNote>
+          }
+          groupBy: {
+            args: Prisma.NoteGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NoteGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.NoteFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.NoteAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.NoteCountArgs<ExtArgs>
+            result: $Utils.Optional<NoteCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1391,6 +1481,7 @@ export namespace Prisma {
     user?: UserOmit
     transaction?: TransactionOmit
     currencyMetadata?: CurrencyMetadataOmit
+    note?: NoteOmit
   }
 
   /* Types for Logging */
@@ -1523,11 +1614,13 @@ export namespace Prisma {
   export type UserCountOutputType = {
     sentTransactions: number
     receivedTransactions: number
+    Note: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sentTransactions?: boolean | UserCountOutputTypeCountSentTransactionsArgs
     receivedTransactions?: boolean | UserCountOutputTypeCountReceivedTransactionsArgs
+    Note?: boolean | UserCountOutputTypeCountNoteArgs
   }
 
   // Custom InputTypes
@@ -1553,6 +1646,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountReceivedTransactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TransactionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountNoteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NoteWhereInput
   }
 
 
@@ -2501,7 +2601,7 @@ export namespace Prisma {
 
   export type BotCountAggregateOutputType = {
     id: number
-    prefixs: number
+    prefixes: number
     owners: number
     createdAt: number
     updatedAt: number
@@ -2523,7 +2623,7 @@ export namespace Prisma {
 
   export type BotCountAggregateInputType = {
     id?: true
-    prefixs?: true
+    prefixes?: true
     owners?: true
     createdAt?: true
     updatedAt?: true
@@ -2604,7 +2704,7 @@ export namespace Prisma {
 
   export type BotGroupByOutputType = {
     id: string
-    prefixs: JsonValue
+    prefixes: JsonValue
     owners: JsonValue
     createdAt: Date
     updatedAt: Date
@@ -2629,7 +2729,7 @@ export namespace Prisma {
 
   export type BotSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    prefixs?: boolean
+    prefixes?: boolean
     owners?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2639,20 +2739,20 @@ export namespace Prisma {
 
   export type BotSelectScalar = {
     id?: boolean
-    prefixs?: boolean
+    prefixes?: boolean
     owners?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type BotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "prefixs" | "owners" | "createdAt" | "updatedAt", ExtArgs["result"]["bot"]>
+  export type BotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "prefixes" | "owners" | "createdAt" | "updatedAt", ExtArgs["result"]["bot"]>
 
   export type $BotPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Bot"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      prefixs: Prisma.JsonValue
+      prefixes: Prisma.JsonValue
       owners: Prisma.JsonValue
       createdAt: Date
       updatedAt: Date
@@ -3049,7 +3149,7 @@ export namespace Prisma {
    */
   interface BotFieldRefs {
     readonly id: FieldRef<"Bot", 'String'>
-    readonly prefixs: FieldRef<"Bot", 'Json'>
+    readonly prefixes: FieldRef<"Bot", 'Json'>
     readonly owners: FieldRef<"Bot", 'Json'>
     readonly createdAt: FieldRef<"Bot", 'DateTime'>
     readonly updatedAt: FieldRef<"Bot", 'DateTime'>
@@ -6771,6 +6871,7 @@ export namespace Prisma {
     updatedAt?: boolean
     sentTransactions?: boolean | User$sentTransactionsArgs<ExtArgs>
     receivedTransactions?: boolean | User$receivedTransactionsArgs<ExtArgs>
+    Note?: boolean | User$NoteArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -6794,6 +6895,7 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sentTransactions?: boolean | User$sentTransactionsArgs<ExtArgs>
     receivedTransactions?: boolean | User$receivedTransactionsArgs<ExtArgs>
+    Note?: boolean | User$NoteArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -6802,6 +6904,7 @@ export namespace Prisma {
     objects: {
       sentTransactions: Prisma.$TransactionPayload<ExtArgs>[]
       receivedTransactions: Prisma.$TransactionPayload<ExtArgs>[]
+      Note: Prisma.$NotePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7180,6 +7283,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     sentTransactions<T extends User$sentTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sentTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     receivedTransactions<T extends User$receivedTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$receivedTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Note<T extends User$NoteArgs<ExtArgs> = {}>(args?: Subset<T, User$NoteArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7638,6 +7742,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.Note
+   */
+  export type User$NoteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    where?: NoteWhereInput
+    orderBy?: NoteOrderByWithRelationInput | NoteOrderByWithRelationInput[]
+    cursor?: NoteWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NoteScalarFieldEnum | NoteScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7686,6 +7814,7 @@ export namespace Prisma {
     fee: number | null
     status: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TransactionMaxAggregateOutputType = {
@@ -7696,6 +7825,7 @@ export namespace Prisma {
     fee: number | null
     status: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TransactionCountAggregateOutputType = {
@@ -7706,6 +7836,7 @@ export namespace Prisma {
     fee: number
     status: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -7728,6 +7859,7 @@ export namespace Prisma {
     fee?: true
     status?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type TransactionMaxAggregateInputType = {
@@ -7738,6 +7870,7 @@ export namespace Prisma {
     fee?: true
     status?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type TransactionCountAggregateInputType = {
@@ -7748,6 +7881,7 @@ export namespace Prisma {
     fee?: true
     status?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -7845,6 +7979,7 @@ export namespace Prisma {
     fee: number
     status: string
     createdAt: Date
+    updatedAt: Date
     _count: TransactionCountAggregateOutputType | null
     _avg: TransactionAvgAggregateOutputType | null
     _sum: TransactionSumAggregateOutputType | null
@@ -7874,6 +8009,7 @@ export namespace Prisma {
     fee?: boolean
     status?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     fromUser?: boolean | Transaction$fromUserArgs<ExtArgs>
     toUser?: boolean | Transaction$toUserArgs<ExtArgs>
   }, ExtArgs["result"]["transaction"]>
@@ -7888,9 +8024,10 @@ export namespace Prisma {
     fee?: boolean
     status?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "fromAddress" | "toAddress" | "amount" | "fee" | "status" | "createdAt", ExtArgs["result"]["transaction"]>
+  export type TransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "fromAddress" | "toAddress" | "amount" | "fee" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["transaction"]>
   export type TransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     fromUser?: boolean | Transaction$fromUserArgs<ExtArgs>
     toUser?: boolean | Transaction$toUserArgs<ExtArgs>
@@ -7910,6 +8047,7 @@ export namespace Prisma {
       fee: number
       status: string
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["transaction"]>
     composites: {}
   }
@@ -8311,6 +8449,7 @@ export namespace Prisma {
     readonly fee: FieldRef<"Transaction", 'Float'>
     readonly status: FieldRef<"Transaction", 'String'>
     readonly createdAt: FieldRef<"Transaction", 'DateTime'>
+    readonly updatedAt: FieldRef<"Transaction", 'DateTime'>
   }
     
 
@@ -9753,6 +9892,1018 @@ export namespace Prisma {
 
 
   /**
+   * Model Note
+   */
+
+  export type AggregateNote = {
+    _count: NoteCountAggregateOutputType | null
+    _min: NoteMinAggregateOutputType | null
+    _max: NoteMaxAggregateOutputType | null
+  }
+
+  export type NoteMinAggregateOutputType = {
+    id: string | null
+    code: string | null
+    title: string | null
+    content: string | null
+    authorJid: string | null
+    password: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type NoteMaxAggregateOutputType = {
+    id: string | null
+    code: string | null
+    title: string | null
+    content: string | null
+    authorJid: string | null
+    password: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type NoteCountAggregateOutputType = {
+    id: number
+    code: number
+    title: number
+    content: number
+    authorJid: number
+    password: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type NoteMinAggregateInputType = {
+    id?: true
+    code?: true
+    title?: true
+    content?: true
+    authorJid?: true
+    password?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type NoteMaxAggregateInputType = {
+    id?: true
+    code?: true
+    title?: true
+    content?: true
+    authorJid?: true
+    password?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type NoteCountAggregateInputType = {
+    id?: true
+    code?: true
+    title?: true
+    content?: true
+    authorJid?: true
+    password?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type NoteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Note to aggregate.
+     */
+    where?: NoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notes to fetch.
+     */
+    orderBy?: NoteOrderByWithRelationInput | NoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Notes
+    **/
+    _count?: true | NoteCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NoteMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NoteMaxAggregateInputType
+  }
+
+  export type GetNoteAggregateType<T extends NoteAggregateArgs> = {
+        [P in keyof T & keyof AggregateNote]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNote[P]>
+      : GetScalarType<T[P], AggregateNote[P]>
+  }
+
+
+
+
+  export type NoteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NoteWhereInput
+    orderBy?: NoteOrderByWithAggregationInput | NoteOrderByWithAggregationInput[]
+    by: NoteScalarFieldEnum[] | NoteScalarFieldEnum
+    having?: NoteScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NoteCountAggregateInputType | true
+    _min?: NoteMinAggregateInputType
+    _max?: NoteMaxAggregateInputType
+  }
+
+  export type NoteGroupByOutputType = {
+    id: string
+    code: string
+    title: string
+    content: string
+    authorJid: string
+    password: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: NoteCountAggregateOutputType | null
+    _min: NoteMinAggregateOutputType | null
+    _max: NoteMaxAggregateOutputType | null
+  }
+
+  type GetNoteGroupByPayload<T extends NoteGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NoteGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NoteGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NoteGroupByOutputType[P]>
+            : GetScalarType<T[P], NoteGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NoteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    code?: boolean
+    title?: boolean
+    content?: boolean
+    authorJid?: boolean
+    password?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    author?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["note"]>
+
+
+
+  export type NoteSelectScalar = {
+    id?: boolean
+    code?: boolean
+    title?: boolean
+    content?: boolean
+    authorJid?: boolean
+    password?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type NoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "title" | "content" | "authorJid" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["note"]>
+  export type NoteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    author?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $NotePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Note"
+    objects: {
+      author: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      code: string
+      title: string
+      content: string
+      authorJid: string
+      password: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["note"]>
+    composites: {}
+  }
+
+  type NoteGetPayload<S extends boolean | null | undefined | NoteDefaultArgs> = $Result.GetResult<Prisma.$NotePayload, S>
+
+  type NoteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NoteFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NoteCountAggregateInputType | true
+    }
+
+  export interface NoteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Note'], meta: { name: 'Note' } }
+    /**
+     * Find zero or one Note that matches the filter.
+     * @param {NoteFindUniqueArgs} args - Arguments to find a Note
+     * @example
+     * // Get one Note
+     * const note = await prisma.note.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NoteFindUniqueArgs>(args: SelectSubset<T, NoteFindUniqueArgs<ExtArgs>>): Prisma__NoteClient<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Note that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NoteFindUniqueOrThrowArgs} args - Arguments to find a Note
+     * @example
+     * // Get one Note
+     * const note = await prisma.note.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NoteFindUniqueOrThrowArgs>(args: SelectSubset<T, NoteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NoteClient<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Note that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoteFindFirstArgs} args - Arguments to find a Note
+     * @example
+     * // Get one Note
+     * const note = await prisma.note.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NoteFindFirstArgs>(args?: SelectSubset<T, NoteFindFirstArgs<ExtArgs>>): Prisma__NoteClient<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Note that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoteFindFirstOrThrowArgs} args - Arguments to find a Note
+     * @example
+     * // Get one Note
+     * const note = await prisma.note.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NoteFindFirstOrThrowArgs>(args?: SelectSubset<T, NoteFindFirstOrThrowArgs<ExtArgs>>): Prisma__NoteClient<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Notes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoteFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Notes
+     * const notes = await prisma.note.findMany()
+     * 
+     * // Get first 10 Notes
+     * const notes = await prisma.note.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const noteWithIdOnly = await prisma.note.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NoteFindManyArgs>(args?: SelectSubset<T, NoteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Note.
+     * @param {NoteCreateArgs} args - Arguments to create a Note.
+     * @example
+     * // Create one Note
+     * const Note = await prisma.note.create({
+     *   data: {
+     *     // ... data to create a Note
+     *   }
+     * })
+     * 
+     */
+    create<T extends NoteCreateArgs>(args: SelectSubset<T, NoteCreateArgs<ExtArgs>>): Prisma__NoteClient<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Notes.
+     * @param {NoteCreateManyArgs} args - Arguments to create many Notes.
+     * @example
+     * // Create many Notes
+     * const note = await prisma.note.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NoteCreateManyArgs>(args?: SelectSubset<T, NoteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Note.
+     * @param {NoteDeleteArgs} args - Arguments to delete one Note.
+     * @example
+     * // Delete one Note
+     * const Note = await prisma.note.delete({
+     *   where: {
+     *     // ... filter to delete one Note
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NoteDeleteArgs>(args: SelectSubset<T, NoteDeleteArgs<ExtArgs>>): Prisma__NoteClient<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Note.
+     * @param {NoteUpdateArgs} args - Arguments to update one Note.
+     * @example
+     * // Update one Note
+     * const note = await prisma.note.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NoteUpdateArgs>(args: SelectSubset<T, NoteUpdateArgs<ExtArgs>>): Prisma__NoteClient<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Notes.
+     * @param {NoteDeleteManyArgs} args - Arguments to filter Notes to delete.
+     * @example
+     * // Delete a few Notes
+     * const { count } = await prisma.note.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NoteDeleteManyArgs>(args?: SelectSubset<T, NoteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Notes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoteUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Notes
+     * const note = await prisma.note.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NoteUpdateManyArgs>(args: SelectSubset<T, NoteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Note.
+     * @param {NoteUpsertArgs} args - Arguments to update or create a Note.
+     * @example
+     * // Update or create a Note
+     * const note = await prisma.note.upsert({
+     *   create: {
+     *     // ... data to create a Note
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Note we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NoteUpsertArgs>(args: SelectSubset<T, NoteUpsertArgs<ExtArgs>>): Prisma__NoteClient<$Result.GetResult<Prisma.$NotePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Notes that matches the filter.
+     * @param {NoteFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const note = await prisma.note.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: NoteFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Note.
+     * @param {NoteAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const note = await prisma.note.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: NoteAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Notes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoteCountArgs} args - Arguments to filter Notes to count.
+     * @example
+     * // Count the number of Notes
+     * const count = await prisma.note.count({
+     *   where: {
+     *     // ... the filter for the Notes we want to count
+     *   }
+     * })
+    **/
+    count<T extends NoteCountArgs>(
+      args?: Subset<T, NoteCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NoteCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Note.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NoteAggregateArgs>(args: Subset<T, NoteAggregateArgs>): Prisma.PrismaPromise<GetNoteAggregateType<T>>
+
+    /**
+     * Group by Note.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NoteGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NoteGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NoteGroupByArgs['orderBy'] }
+        : { orderBy?: NoteGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NoteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNoteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Note model
+   */
+  readonly fields: NoteFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Note.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NoteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    author<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Note model
+   */
+  interface NoteFieldRefs {
+    readonly id: FieldRef<"Note", 'String'>
+    readonly code: FieldRef<"Note", 'String'>
+    readonly title: FieldRef<"Note", 'String'>
+    readonly content: FieldRef<"Note", 'String'>
+    readonly authorJid: FieldRef<"Note", 'String'>
+    readonly password: FieldRef<"Note", 'String'>
+    readonly createdAt: FieldRef<"Note", 'DateTime'>
+    readonly updatedAt: FieldRef<"Note", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Note findUnique
+   */
+  export type NoteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * Filter, which Note to fetch.
+     */
+    where: NoteWhereUniqueInput
+  }
+
+  /**
+   * Note findUniqueOrThrow
+   */
+  export type NoteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * Filter, which Note to fetch.
+     */
+    where: NoteWhereUniqueInput
+  }
+
+  /**
+   * Note findFirst
+   */
+  export type NoteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * Filter, which Note to fetch.
+     */
+    where?: NoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notes to fetch.
+     */
+    orderBy?: NoteOrderByWithRelationInput | NoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notes.
+     */
+    cursor?: NoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notes.
+     */
+    distinct?: NoteScalarFieldEnum | NoteScalarFieldEnum[]
+  }
+
+  /**
+   * Note findFirstOrThrow
+   */
+  export type NoteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * Filter, which Note to fetch.
+     */
+    where?: NoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notes to fetch.
+     */
+    orderBy?: NoteOrderByWithRelationInput | NoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notes.
+     */
+    cursor?: NoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notes.
+     */
+    distinct?: NoteScalarFieldEnum | NoteScalarFieldEnum[]
+  }
+
+  /**
+   * Note findMany
+   */
+  export type NoteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * Filter, which Notes to fetch.
+     */
+    where?: NoteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notes to fetch.
+     */
+    orderBy?: NoteOrderByWithRelationInput | NoteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Notes.
+     */
+    cursor?: NoteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notes.
+     */
+    skip?: number
+    distinct?: NoteScalarFieldEnum | NoteScalarFieldEnum[]
+  }
+
+  /**
+   * Note create
+   */
+  export type NoteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Note.
+     */
+    data: XOR<NoteCreateInput, NoteUncheckedCreateInput>
+  }
+
+  /**
+   * Note createMany
+   */
+  export type NoteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Notes.
+     */
+    data: NoteCreateManyInput | NoteCreateManyInput[]
+  }
+
+  /**
+   * Note update
+   */
+  export type NoteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Note.
+     */
+    data: XOR<NoteUpdateInput, NoteUncheckedUpdateInput>
+    /**
+     * Choose, which Note to update.
+     */
+    where: NoteWhereUniqueInput
+  }
+
+  /**
+   * Note updateMany
+   */
+  export type NoteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Notes.
+     */
+    data: XOR<NoteUpdateManyMutationInput, NoteUncheckedUpdateManyInput>
+    /**
+     * Filter which Notes to update
+     */
+    where?: NoteWhereInput
+    /**
+     * Limit how many Notes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Note upsert
+   */
+  export type NoteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Note to update in case it exists.
+     */
+    where: NoteWhereUniqueInput
+    /**
+     * In case the Note found by the `where` argument doesn't exist, create a new Note with this data.
+     */
+    create: XOR<NoteCreateInput, NoteUncheckedCreateInput>
+    /**
+     * In case the Note was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NoteUpdateInput, NoteUncheckedUpdateInput>
+  }
+
+  /**
+   * Note delete
+   */
+  export type NoteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+    /**
+     * Filter which Note to delete.
+     */
+    where: NoteWhereUniqueInput
+  }
+
+  /**
+   * Note deleteMany
+   */
+  export type NoteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notes to delete
+     */
+    where?: NoteWhereInput
+    /**
+     * Limit how many Notes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Note findRaw
+   */
+  export type NoteFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Note aggregateRaw
+   */
+  export type NoteAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Note without action
+   */
+  export type NoteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Note
+     */
+    select?: NoteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Note
+     */
+    omit?: NoteOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NoteInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -9768,7 +10919,7 @@ export namespace Prisma {
 
   export const BotScalarFieldEnum: {
     id: 'id',
-    prefixs: 'prefixs',
+    prefixes: 'prefixes',
     owners: 'owners',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -9848,7 +10999,8 @@ export namespace Prisma {
     amount: 'amount',
     fee: 'fee',
     status: 'status',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum]
@@ -9866,6 +11018,20 @@ export namespace Prisma {
   };
 
   export type CurrencyMetadataScalarFieldEnum = (typeof CurrencyMetadataScalarFieldEnum)[keyof typeof CurrencyMetadataScalarFieldEnum]
+
+
+  export const NoteScalarFieldEnum: {
+    id: 'id',
+    code: 'code',
+    title: 'title',
+    content: 'content',
+    authorJid: 'authorJid',
+    password: 'password',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type NoteScalarFieldEnum = (typeof NoteScalarFieldEnum)[keyof typeof NoteScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -10029,7 +11195,7 @@ export namespace Prisma {
     OR?: BotWhereInput[]
     NOT?: BotWhereInput | BotWhereInput[]
     id?: StringFilter<"Bot"> | string
-    prefixs?: JsonFilter<"Bot">
+    prefixes?: JsonFilter<"Bot">
     owners?: JsonFilter<"Bot">
     createdAt?: DateTimeFilter<"Bot"> | Date | string
     updatedAt?: DateTimeFilter<"Bot"> | Date | string
@@ -10037,7 +11203,7 @@ export namespace Prisma {
 
   export type BotOrderByWithRelationInput = {
     id?: SortOrder
-    prefixs?: SortOrder
+    prefixes?: SortOrder
     owners?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10048,7 +11214,7 @@ export namespace Prisma {
     AND?: BotWhereInput | BotWhereInput[]
     OR?: BotWhereInput[]
     NOT?: BotWhereInput | BotWhereInput[]
-    prefixs?: JsonFilter<"Bot">
+    prefixes?: JsonFilter<"Bot">
     owners?: JsonFilter<"Bot">
     createdAt?: DateTimeFilter<"Bot"> | Date | string
     updatedAt?: DateTimeFilter<"Bot"> | Date | string
@@ -10056,7 +11222,7 @@ export namespace Prisma {
 
   export type BotOrderByWithAggregationInput = {
     id?: SortOrder
-    prefixs?: SortOrder
+    prefixes?: SortOrder
     owners?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10070,7 +11236,7 @@ export namespace Prisma {
     OR?: BotScalarWhereWithAggregatesInput[]
     NOT?: BotScalarWhereWithAggregatesInput | BotScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Bot"> | string
-    prefixs?: JsonWithAggregatesFilter<"Bot">
+    prefixes?: JsonWithAggregatesFilter<"Bot">
     owners?: JsonWithAggregatesFilter<"Bot">
     createdAt?: DateTimeWithAggregatesFilter<"Bot"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Bot"> | Date | string
@@ -10330,6 +11496,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     sentTransactions?: TransactionListRelationFilter
     receivedTransactions?: TransactionListRelationFilter
+    Note?: NoteListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -10346,6 +11513,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     sentTransactions?: TransactionOrderByRelationAggregateInput
     receivedTransactions?: TransactionOrderByRelationAggregateInput
+    Note?: NoteOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -10365,6 +11533,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     sentTransactions?: TransactionListRelationFilter
     receivedTransactions?: TransactionListRelationFilter
+    Note?: NoteListRelationFilter
   }, "id" | "jid">
 
   export type UserOrderByWithAggregationInput = {
@@ -10414,6 +11583,7 @@ export namespace Prisma {
     fee?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
     createdAt?: DateTimeFilter<"Transaction"> | Date | string
+    updatedAt?: DateTimeFilter<"Transaction"> | Date | string
     fromUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     toUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }
@@ -10426,6 +11596,7 @@ export namespace Prisma {
     fee?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     fromUser?: UserOrderByWithRelationInput
     toUser?: UserOrderByWithRelationInput
   }
@@ -10441,6 +11612,7 @@ export namespace Prisma {
     fee?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
     createdAt?: DateTimeFilter<"Transaction"> | Date | string
+    updatedAt?: DateTimeFilter<"Transaction"> | Date | string
     fromUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     toUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }, "id">
@@ -10453,6 +11625,7 @@ export namespace Prisma {
     fee?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: TransactionCountOrderByAggregateInput
     _avg?: TransactionAvgOrderByAggregateInput
     _max?: TransactionMaxOrderByAggregateInput
@@ -10471,6 +11644,7 @@ export namespace Prisma {
     fee?: FloatWithAggregatesFilter<"Transaction"> | number
     status?: StringWithAggregatesFilter<"Transaction"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Transaction"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Transaction"> | Date | string
   }
 
   export type CurrencyMetadataWhereInput = {
@@ -10542,6 +11716,76 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"CurrencyMetadata"> | Date | string
   }
 
+  export type NoteWhereInput = {
+    AND?: NoteWhereInput | NoteWhereInput[]
+    OR?: NoteWhereInput[]
+    NOT?: NoteWhereInput | NoteWhereInput[]
+    id?: StringFilter<"Note"> | string
+    code?: StringFilter<"Note"> | string
+    title?: StringFilter<"Note"> | string
+    content?: StringFilter<"Note"> | string
+    authorJid?: StringFilter<"Note"> | string
+    password?: StringNullableFilter<"Note"> | string | null
+    createdAt?: DateTimeFilter<"Note"> | Date | string
+    updatedAt?: DateTimeFilter<"Note"> | Date | string
+    author?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type NoteOrderByWithRelationInput = {
+    id?: SortOrder
+    code?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    authorJid?: SortOrder
+    password?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    author?: UserOrderByWithRelationInput
+  }
+
+  export type NoteWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    code?: string
+    AND?: NoteWhereInput | NoteWhereInput[]
+    OR?: NoteWhereInput[]
+    NOT?: NoteWhereInput | NoteWhereInput[]
+    title?: StringFilter<"Note"> | string
+    content?: StringFilter<"Note"> | string
+    authorJid?: StringFilter<"Note"> | string
+    password?: StringNullableFilter<"Note"> | string | null
+    createdAt?: DateTimeFilter<"Note"> | Date | string
+    updatedAt?: DateTimeFilter<"Note"> | Date | string
+    author?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "code">
+
+  export type NoteOrderByWithAggregationInput = {
+    id?: SortOrder
+    code?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    authorJid?: SortOrder
+    password?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: NoteCountOrderByAggregateInput
+    _max?: NoteMaxOrderByAggregateInput
+    _min?: NoteMinOrderByAggregateInput
+  }
+
+  export type NoteScalarWhereWithAggregatesInput = {
+    AND?: NoteScalarWhereWithAggregatesInput | NoteScalarWhereWithAggregatesInput[]
+    OR?: NoteScalarWhereWithAggregatesInput[]
+    NOT?: NoteScalarWhereWithAggregatesInput | NoteScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Note"> | string
+    code?: StringWithAggregatesFilter<"Note"> | string
+    title?: StringWithAggregatesFilter<"Note"> | string
+    content?: StringWithAggregatesFilter<"Note"> | string
+    authorJid?: StringWithAggregatesFilter<"Note"> | string
+    password?: StringNullableWithAggregatesFilter<"Note"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Note"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Note"> | Date | string
+  }
+
   export type DeviceAuthCreateInput = {
     id?: string
     session: string
@@ -10589,7 +11833,7 @@ export namespace Prisma {
 
   export type BotCreateInput = {
     id?: string
-    prefixs: InputJsonValue
+    prefixes: InputJsonValue
     owners: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -10597,21 +11841,21 @@ export namespace Prisma {
 
   export type BotUncheckedCreateInput = {
     id?: string
-    prefixs: InputJsonValue
+    prefixes: InputJsonValue
     owners: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type BotUpdateInput = {
-    prefixs?: InputJsonValue | InputJsonValue
+    prefixes?: InputJsonValue | InputJsonValue
     owners?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type BotUncheckedUpdateInput = {
-    prefixs?: InputJsonValue | InputJsonValue
+    prefixes?: InputJsonValue | InputJsonValue
     owners?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10619,21 +11863,21 @@ export namespace Prisma {
 
   export type BotCreateManyInput = {
     id?: string
-    prefixs: InputJsonValue
+    prefixes: InputJsonValue
     owners: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type BotUpdateManyMutationInput = {
-    prefixs?: InputJsonValue | InputJsonValue
+    prefixes?: InputJsonValue | InputJsonValue
     owners?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type BotUncheckedUpdateManyInput = {
-    prefixs?: InputJsonValue | InputJsonValue
+    prefixes?: InputJsonValue | InputJsonValue
     owners?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10910,6 +12154,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     sentTransactions?: TransactionCreateNestedManyWithoutFromUserInput
     receivedTransactions?: TransactionCreateNestedManyWithoutToUserInput
+    Note?: NoteCreateNestedManyWithoutAuthorInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -10926,6 +12171,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     sentTransactions?: TransactionUncheckedCreateNestedManyWithoutFromUserInput
     receivedTransactions?: TransactionUncheckedCreateNestedManyWithoutToUserInput
+    Note?: NoteUncheckedCreateNestedManyWithoutAuthorInput
   }
 
   export type UserUpdateInput = {
@@ -10941,6 +12187,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sentTransactions?: TransactionUpdateManyWithoutFromUserNestedInput
     receivedTransactions?: TransactionUpdateManyWithoutToUserNestedInput
+    Note?: NoteUpdateManyWithoutAuthorNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -10956,6 +12203,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sentTransactions?: TransactionUncheckedUpdateManyWithoutFromUserNestedInput
     receivedTransactions?: TransactionUncheckedUpdateManyWithoutToUserNestedInput
+    Note?: NoteUncheckedUpdateManyWithoutAuthorNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -11004,6 +12252,7 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     fromUser?: UserCreateNestedOneWithoutSentTransactionsInput
     toUser?: UserCreateNestedOneWithoutReceivedTransactionsInput
   }
@@ -11016,6 +12265,7 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TransactionUpdateInput = {
@@ -11023,6 +12273,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fromUser?: UserUpdateOneWithoutSentTransactionsNestedInput
     toUser?: UserUpdateOneWithoutReceivedTransactionsNestedInput
   }
@@ -11034,6 +12285,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TransactionCreateManyInput = {
@@ -11044,6 +12296,7 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TransactionUpdateManyMutationInput = {
@@ -11051,6 +12304,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TransactionUncheckedUpdateManyInput = {
@@ -11060,6 +12314,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CurrencyMetadataCreateInput = {
@@ -11131,6 +12386,78 @@ export namespace Prisma {
     initialReward?: FloatFieldUpdateOperationsInput | number
     halvingInterval?: IntFieldUpdateOperationsInput | number
     transferFee?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoteCreateInput = {
+    id?: string
+    code: string
+    title: string
+    content: string
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    author: UserCreateNestedOneWithoutNoteInput
+  }
+
+  export type NoteUncheckedCreateInput = {
+    id?: string
+    code: string
+    title: string
+    content: string
+    authorJid: string
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NoteUpdateInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    author?: UserUpdateOneRequiredWithoutNoteNestedInput
+  }
+
+  export type NoteUncheckedUpdateInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    authorJid?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoteCreateManyInput = {
+    id?: string
+    code: string
+    title: string
+    content: string
+    authorJid: string
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NoteUpdateManyMutationInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoteUncheckedUpdateManyInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    authorJid?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11243,7 +12570,7 @@ export namespace Prisma {
 
   export type BotCountOrderByAggregateInput = {
     id?: SortOrder
-    prefixs?: SortOrder
+    prefixes?: SortOrder
     owners?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11523,7 +12850,17 @@ export namespace Prisma {
     none?: TransactionWhereInput
   }
 
+  export type NoteListRelationFilter = {
+    every?: NoteWhereInput
+    some?: NoteWhereInput
+    none?: NoteWhereInput
+  }
+
   export type TransactionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NoteOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -11623,6 +12960,7 @@ export namespace Prisma {
     fee?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TransactionAvgOrderByAggregateInput = {
@@ -11638,6 +12976,7 @@ export namespace Prisma {
     fee?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TransactionMinOrderByAggregateInput = {
@@ -11648,6 +12987,7 @@ export namespace Prisma {
     fee?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TransactionSumOrderByAggregateInput = {
@@ -11702,6 +13042,44 @@ export namespace Prisma {
     initialReward?: SortOrder
     halvingInterval?: SortOrder
     transferFee?: SortOrder
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type NoteCountOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    authorJid?: SortOrder
+    password?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NoteMaxOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    authorJid?: SortOrder
+    password?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type NoteMinOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    title?: SortOrder
+    content?: SortOrder
+    authorJid?: SortOrder
+    password?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -11798,6 +13176,13 @@ export namespace Prisma {
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
   }
 
+  export type NoteCreateNestedManyWithoutAuthorInput = {
+    create?: XOR<NoteCreateWithoutAuthorInput, NoteUncheckedCreateWithoutAuthorInput> | NoteCreateWithoutAuthorInput[] | NoteUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: NoteCreateOrConnectWithoutAuthorInput | NoteCreateOrConnectWithoutAuthorInput[]
+    createMany?: NoteCreateManyAuthorInputEnvelope
+    connect?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+  }
+
   export type TransactionUncheckedCreateNestedManyWithoutFromUserInput = {
     create?: XOR<TransactionCreateWithoutFromUserInput, TransactionUncheckedCreateWithoutFromUserInput> | TransactionCreateWithoutFromUserInput[] | TransactionUncheckedCreateWithoutFromUserInput[]
     connectOrCreate?: TransactionCreateOrConnectWithoutFromUserInput | TransactionCreateOrConnectWithoutFromUserInput[]
@@ -11810,6 +13195,13 @@ export namespace Prisma {
     connectOrCreate?: TransactionCreateOrConnectWithoutToUserInput | TransactionCreateOrConnectWithoutToUserInput[]
     createMany?: TransactionCreateManyToUserInputEnvelope
     connect?: TransactionWhereUniqueInput | TransactionWhereUniqueInput[]
+  }
+
+  export type NoteUncheckedCreateNestedManyWithoutAuthorInput = {
+    create?: XOR<NoteCreateWithoutAuthorInput, NoteUncheckedCreateWithoutAuthorInput> | NoteCreateWithoutAuthorInput[] | NoteUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: NoteCreateOrConnectWithoutAuthorInput | NoteCreateOrConnectWithoutAuthorInput[]
+    createMany?: NoteCreateManyAuthorInputEnvelope
+    connect?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
   }
 
   export type NullableStringFieldUpdateOperationsInput = {
@@ -11853,6 +13245,20 @@ export namespace Prisma {
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
   }
 
+  export type NoteUpdateManyWithoutAuthorNestedInput = {
+    create?: XOR<NoteCreateWithoutAuthorInput, NoteUncheckedCreateWithoutAuthorInput> | NoteCreateWithoutAuthorInput[] | NoteUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: NoteCreateOrConnectWithoutAuthorInput | NoteCreateOrConnectWithoutAuthorInput[]
+    upsert?: NoteUpsertWithWhereUniqueWithoutAuthorInput | NoteUpsertWithWhereUniqueWithoutAuthorInput[]
+    createMany?: NoteCreateManyAuthorInputEnvelope
+    set?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+    disconnect?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+    delete?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+    connect?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+    update?: NoteUpdateWithWhereUniqueWithoutAuthorInput | NoteUpdateWithWhereUniqueWithoutAuthorInput[]
+    updateMany?: NoteUpdateManyWithWhereWithoutAuthorInput | NoteUpdateManyWithWhereWithoutAuthorInput[]
+    deleteMany?: NoteScalarWhereInput | NoteScalarWhereInput[]
+  }
+
   export type TransactionUncheckedUpdateManyWithoutFromUserNestedInput = {
     create?: XOR<TransactionCreateWithoutFromUserInput, TransactionUncheckedCreateWithoutFromUserInput> | TransactionCreateWithoutFromUserInput[] | TransactionUncheckedCreateWithoutFromUserInput[]
     connectOrCreate?: TransactionCreateOrConnectWithoutFromUserInput | TransactionCreateOrConnectWithoutFromUserInput[]
@@ -11879,6 +13285,20 @@ export namespace Prisma {
     update?: TransactionUpdateWithWhereUniqueWithoutToUserInput | TransactionUpdateWithWhereUniqueWithoutToUserInput[]
     updateMany?: TransactionUpdateManyWithWhereWithoutToUserInput | TransactionUpdateManyWithWhereWithoutToUserInput[]
     deleteMany?: TransactionScalarWhereInput | TransactionScalarWhereInput[]
+  }
+
+  export type NoteUncheckedUpdateManyWithoutAuthorNestedInput = {
+    create?: XOR<NoteCreateWithoutAuthorInput, NoteUncheckedCreateWithoutAuthorInput> | NoteCreateWithoutAuthorInput[] | NoteUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: NoteCreateOrConnectWithoutAuthorInput | NoteCreateOrConnectWithoutAuthorInput[]
+    upsert?: NoteUpsertWithWhereUniqueWithoutAuthorInput | NoteUpsertWithWhereUniqueWithoutAuthorInput[]
+    createMany?: NoteCreateManyAuthorInputEnvelope
+    set?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+    disconnect?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+    delete?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+    connect?: NoteWhereUniqueInput | NoteWhereUniqueInput[]
+    update?: NoteUpdateWithWhereUniqueWithoutAuthorInput | NoteUpdateWithWhereUniqueWithoutAuthorInput[]
+    updateMany?: NoteUpdateManyWithWhereWithoutAuthorInput | NoteUpdateManyWithWhereWithoutAuthorInput[]
+    deleteMany?: NoteScalarWhereInput | NoteScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutSentTransactionsInput = {
@@ -11911,6 +13331,20 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReceivedTransactionsInput, UserUpdateWithoutReceivedTransactionsInput>, UserUncheckedUpdateWithoutReceivedTransactionsInput>
+  }
+
+  export type UserCreateNestedOneWithoutNoteInput = {
+    create?: XOR<UserCreateWithoutNoteInput, UserUncheckedCreateWithoutNoteInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNoteInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutNoteNestedInput = {
+    create?: XOR<UserCreateWithoutNoteInput, UserUncheckedCreateWithoutNoteInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNoteInput
+    upsert?: UserUpsertWithoutNoteInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNoteInput, UserUpdateWithoutNoteInput>, UserUncheckedUpdateWithoutNoteInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -12276,6 +13710,7 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     toUser?: UserCreateNestedOneWithoutReceivedTransactionsInput
   }
 
@@ -12286,6 +13721,7 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TransactionCreateOrConnectWithoutFromUserInput = {
@@ -12303,6 +13739,7 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     fromUser?: UserCreateNestedOneWithoutSentTransactionsInput
   }
 
@@ -12313,6 +13750,7 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TransactionCreateOrConnectWithoutToUserInput = {
@@ -12322,6 +13760,35 @@ export namespace Prisma {
 
   export type TransactionCreateManyToUserInputEnvelope = {
     data: TransactionCreateManyToUserInput | TransactionCreateManyToUserInput[]
+  }
+
+  export type NoteCreateWithoutAuthorInput = {
+    id?: string
+    code: string
+    title: string
+    content: string
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NoteUncheckedCreateWithoutAuthorInput = {
+    id?: string
+    code: string
+    title: string
+    content: string
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NoteCreateOrConnectWithoutAuthorInput = {
+    where: NoteWhereUniqueInput
+    create: XOR<NoteCreateWithoutAuthorInput, NoteUncheckedCreateWithoutAuthorInput>
+  }
+
+  export type NoteCreateManyAuthorInputEnvelope = {
+    data: NoteCreateManyAuthorInput | NoteCreateManyAuthorInput[]
   }
 
   export type TransactionUpsertWithWhereUniqueWithoutFromUserInput = {
@@ -12351,6 +13818,7 @@ export namespace Prisma {
     fee?: FloatFilter<"Transaction"> | number
     status?: StringFilter<"Transaction"> | string
     createdAt?: DateTimeFilter<"Transaction"> | Date | string
+    updatedAt?: DateTimeFilter<"Transaction"> | Date | string
   }
 
   export type TransactionUpsertWithWhereUniqueWithoutToUserInput = {
@@ -12369,6 +13837,36 @@ export namespace Prisma {
     data: XOR<TransactionUpdateManyMutationInput, TransactionUncheckedUpdateManyWithoutToUserInput>
   }
 
+  export type NoteUpsertWithWhereUniqueWithoutAuthorInput = {
+    where: NoteWhereUniqueInput
+    update: XOR<NoteUpdateWithoutAuthorInput, NoteUncheckedUpdateWithoutAuthorInput>
+    create: XOR<NoteCreateWithoutAuthorInput, NoteUncheckedCreateWithoutAuthorInput>
+  }
+
+  export type NoteUpdateWithWhereUniqueWithoutAuthorInput = {
+    where: NoteWhereUniqueInput
+    data: XOR<NoteUpdateWithoutAuthorInput, NoteUncheckedUpdateWithoutAuthorInput>
+  }
+
+  export type NoteUpdateManyWithWhereWithoutAuthorInput = {
+    where: NoteScalarWhereInput
+    data: XOR<NoteUpdateManyMutationInput, NoteUncheckedUpdateManyWithoutAuthorInput>
+  }
+
+  export type NoteScalarWhereInput = {
+    AND?: NoteScalarWhereInput | NoteScalarWhereInput[]
+    OR?: NoteScalarWhereInput[]
+    NOT?: NoteScalarWhereInput | NoteScalarWhereInput[]
+    id?: StringFilter<"Note"> | string
+    code?: StringFilter<"Note"> | string
+    title?: StringFilter<"Note"> | string
+    content?: StringFilter<"Note"> | string
+    authorJid?: StringFilter<"Note"> | string
+    password?: StringNullableFilter<"Note"> | string | null
+    createdAt?: DateTimeFilter<"Note"> | Date | string
+    updatedAt?: DateTimeFilter<"Note"> | Date | string
+  }
+
   export type UserCreateWithoutSentTransactionsInput = {
     id?: string
     jid: string
@@ -12382,6 +13880,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     receivedTransactions?: TransactionCreateNestedManyWithoutToUserInput
+    Note?: NoteCreateNestedManyWithoutAuthorInput
   }
 
   export type UserUncheckedCreateWithoutSentTransactionsInput = {
@@ -12397,6 +13896,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     receivedTransactions?: TransactionUncheckedCreateNestedManyWithoutToUserInput
+    Note?: NoteUncheckedCreateNestedManyWithoutAuthorInput
   }
 
   export type UserCreateOrConnectWithoutSentTransactionsInput = {
@@ -12417,6 +13917,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     sentTransactions?: TransactionCreateNestedManyWithoutFromUserInput
+    Note?: NoteCreateNestedManyWithoutAuthorInput
   }
 
   export type UserUncheckedCreateWithoutReceivedTransactionsInput = {
@@ -12432,6 +13933,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     sentTransactions?: TransactionUncheckedCreateNestedManyWithoutFromUserInput
+    Note?: NoteUncheckedCreateNestedManyWithoutAuthorInput
   }
 
   export type UserCreateOrConnectWithoutReceivedTransactionsInput = {
@@ -12462,6 +13964,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     receivedTransactions?: TransactionUpdateManyWithoutToUserNestedInput
+    Note?: NoteUpdateManyWithoutAuthorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentTransactionsInput = {
@@ -12476,6 +13979,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     receivedTransactions?: TransactionUncheckedUpdateManyWithoutToUserNestedInput
+    Note?: NoteUncheckedUpdateManyWithoutAuthorNestedInput
   }
 
   export type UserUpsertWithoutReceivedTransactionsInput = {
@@ -12501,6 +14005,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sentTransactions?: TransactionUpdateManyWithoutFromUserNestedInput
+    Note?: NoteUpdateManyWithoutAuthorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReceivedTransactionsInput = {
@@ -12515,6 +14020,85 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sentTransactions?: TransactionUncheckedUpdateManyWithoutFromUserNestedInput
+    Note?: NoteUncheckedUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserCreateWithoutNoteInput = {
+    id?: string
+    jid: string
+    pushName?: string | null
+    exp?: number
+    subscription?: InputJsonValue
+    banStatus?: InputJsonValue
+    token?: string
+    lang?: string
+    balance?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sentTransactions?: TransactionCreateNestedManyWithoutFromUserInput
+    receivedTransactions?: TransactionCreateNestedManyWithoutToUserInput
+  }
+
+  export type UserUncheckedCreateWithoutNoteInput = {
+    id?: string
+    jid: string
+    pushName?: string | null
+    exp?: number
+    subscription?: InputJsonValue
+    banStatus?: InputJsonValue
+    token?: string
+    lang?: string
+    balance?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sentTransactions?: TransactionUncheckedCreateNestedManyWithoutFromUserInput
+    receivedTransactions?: TransactionUncheckedCreateNestedManyWithoutToUserInput
+  }
+
+  export type UserCreateOrConnectWithoutNoteInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutNoteInput, UserUncheckedCreateWithoutNoteInput>
+  }
+
+  export type UserUpsertWithoutNoteInput = {
+    update: XOR<UserUpdateWithoutNoteInput, UserUncheckedUpdateWithoutNoteInput>
+    create: XOR<UserCreateWithoutNoteInput, UserUncheckedCreateWithoutNoteInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutNoteInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutNoteInput, UserUncheckedUpdateWithoutNoteInput>
+  }
+
+  export type UserUpdateWithoutNoteInput = {
+    jid?: StringFieldUpdateOperationsInput | string
+    pushName?: NullableStringFieldUpdateOperationsInput | string | null
+    exp?: IntFieldUpdateOperationsInput | number
+    subscription?: InputJsonValue | InputJsonValue
+    banStatus?: InputJsonValue | InputJsonValue
+    token?: StringFieldUpdateOperationsInput | string
+    lang?: StringFieldUpdateOperationsInput | string
+    balance?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentTransactions?: TransactionUpdateManyWithoutFromUserNestedInput
+    receivedTransactions?: TransactionUpdateManyWithoutToUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutNoteInput = {
+    jid?: StringFieldUpdateOperationsInput | string
+    pushName?: NullableStringFieldUpdateOperationsInput | string | null
+    exp?: IntFieldUpdateOperationsInput | number
+    subscription?: InputJsonValue | InputJsonValue
+    banStatus?: InputJsonValue | InputJsonValue
+    token?: StringFieldUpdateOperationsInput | string
+    lang?: StringFieldUpdateOperationsInput | string
+    balance?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentTransactions?: TransactionUncheckedUpdateManyWithoutFromUserNestedInput
+    receivedTransactions?: TransactionUncheckedUpdateManyWithoutToUserNestedInput
   }
 
   export type GroupParticipantCreateManyGroupInput = {
@@ -12561,6 +14145,7 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TransactionCreateManyToUserInput = {
@@ -12570,6 +14155,17 @@ export namespace Prisma {
     fee: number
     status?: string
     createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NoteCreateManyAuthorInput = {
+    id?: string
+    code: string
+    title: string
+    content: string
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TransactionUpdateWithoutFromUserInput = {
@@ -12577,6 +14173,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     toUser?: UserUpdateOneWithoutReceivedTransactionsNestedInput
   }
 
@@ -12586,6 +14183,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TransactionUncheckedUpdateManyWithoutFromUserInput = {
@@ -12594,6 +14192,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TransactionUpdateWithoutToUserInput = {
@@ -12601,6 +14200,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fromUser?: UserUpdateOneWithoutSentTransactionsNestedInput
   }
 
@@ -12610,6 +14210,7 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TransactionUncheckedUpdateManyWithoutToUserInput = {
@@ -12618,6 +14219,34 @@ export namespace Prisma {
     fee?: FloatFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoteUpdateWithoutAuthorInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoteUncheckedUpdateWithoutAuthorInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NoteUncheckedUpdateManyWithoutAuthorInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

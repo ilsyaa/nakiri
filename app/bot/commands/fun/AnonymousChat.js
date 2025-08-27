@@ -4,7 +4,7 @@ const AnonymousChat = require('../../../utils/AnonymousChat.js');
 Command({
   name: 'anonymouschat-start',
   description: 'Anonymous Chat',
-  alias: ['start'],
+  alias: ['anonymouschat', 'start'],
   tags : {
     label : 'fun'
   },

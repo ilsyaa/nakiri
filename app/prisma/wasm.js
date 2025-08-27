@@ -122,7 +122,7 @@ exports.Prisma.DeviceAuthScalarFieldEnum = {
 
 exports.Prisma.BotScalarFieldEnum = {
   id: 'id',
-  prefixs: 'prefixs',
+  prefixes: 'prefixes',
   owners: 'owners',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -187,7 +187,8 @@ exports.Prisma.TransactionScalarFieldEnum = {
   amount: 'amount',
   fee: 'fee',
   status: 'status',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.CurrencyMetadataScalarFieldEnum = {
@@ -197,6 +198,17 @@ exports.Prisma.CurrencyMetadataScalarFieldEnum = {
   initialReward: 'initialReward',
   halvingInterval: 'halvingInterval',
   transferFee: 'transferFee',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NoteScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  title: 'title',
+  content: 'content',
+  authorJid: 'authorJid',
+  password: 'password',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -223,7 +235,8 @@ exports.Prisma.ModelName = {
   GroupTag: 'GroupTag',
   User: 'User',
   Transaction: 'Transaction',
-  CurrencyMetadata: 'CurrencyMetadata'
+  CurrencyMetadata: 'CurrencyMetadata',
+  Note: 'Note'
 };
 
 /**

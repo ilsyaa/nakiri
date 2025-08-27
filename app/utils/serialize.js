@@ -159,15 +159,15 @@ const getText = (message) => {
 
 const getMessageContent = (message, dbBot) => {
   const mtype = getContentType(message);
-  const prefixs = dbBot?.prefixs || [];
+  const prefixes = dbBot?.prefixes || [];
   const text = getText(message);
     
   return {
-    prefix: prefixs.find(p => text.startsWith(p)) || null,
+    prefix: prefixes.find(p => text.startsWith(p)) || null,
     text,
     textWithoutCommand: text.includes(' ') ? text.slice(text.indexOf(' ') + 1) : '',
     command: text.split(' ')[0].trim(),
-    commandWithoutPrefix: text.split(' ')[0].replace(new RegExp(`^[${prefixs.join('')}]`), ''),
+    commandWithoutPrefix: text.split(' ')[0].replace(new RegExp(`^[${prefixes.join('')}]`), ''),
     mentionedJid: message[mtype]?.contextInfo?.mentionedJid || [],
     expiration: message[mtype]?.contextInfo?.expiration || 0,
     isText: mtype === 'conversation' || mtype === 'extendedTextMessage',
