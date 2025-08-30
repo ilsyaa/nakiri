@@ -76,7 +76,13 @@
             },
             "accessFeatures": {
                 "ex": "Contoh: {command} everyone/adminonly\n`everyone` = Semua orang bisa menggunakan command bot.\n`adminonly` = Hanya admin yang bisa menggunakan command bot.",
-                "success": "Fitur akses diatur ke {accessFeatures}."
+                "setEveryone": "Berhasil mengatur semua orang bisa menggunakan command bot.",
+                "setAdminOnly": "Berhasil mengatur hanya admin yang bisa menggunakan command bot."
+            },
+            "acc": {
+                "max": "Grup sudah mencapai batas anggota maksimal.",
+                "noRequest": "Tidak ada permintaan bergabung ke grup.",
+                "success": "Berhasil menyetujui {totalApprove} anggota."
             }
         },
 
