@@ -1,7 +1,6 @@
-const { default: axios } = require('axios');
 const { delay } = require('baileys');
-const OpenAI = require('openai');
 const { DateTime } = require('luxon');
+const axios = require('axios');
 
 const historyChat = new Map();
 
@@ -19,29 +18,26 @@ module.exports = {
 
     try {
       const history = historyChat.get(m.chat) || [];
-      await sock.readMessages([m.key]);
       
       history.push({ user: m.senderJid.split('@')[0], message: m.content.text });
 
       let chatHistory = history.map((v) => `@${v.user}: ${v.message}`).join('\n');
 
-      console.log('[NAKIRI AI PROMPT]', systemInstruction + chatHistory);
-      
-      const openai = new OpenAI({
-        baseURL: 'https://api.unli.dev/v1',
-        apiKey: 'sk-xPz7icsu4PjgE_zgN6zTvnYOhN_Uu1nqIcdV4L4h00_SqcYK8xzyZ58b2lUxOu0r',
-      });
-
-      const completion = await openai.chat.completions.create({
+      const respons = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         messages: [{ role: 'user', content: systemInstruction + chatHistory }, { role: 'user', content: `@${m.senderJid.split('@')[0]} : ` + m.content.text }],
-        model: 'auto',
+        model: 'deepseek/deepseek-chat-v3-0324:free',
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`
+        }
       });
 
-      const aiReply = completion.choices[0].message.content.trim();
+      const aiReply = respons.data.choices[0].message.content.regexp(/<think>[\s\S]*?<\/think>/g, '').trim();
       if (aiReply) {
         history.push({ user: 'Nakiri', message: aiReply });
         historyChat.set(m.chat, history);
         
+        await sock.readMessages([m.key]);
         await sock.sendPresenceUpdate('composing', m.chat);
         await delay(800 + Math.random() * 1200);
         await m.reply(aiReply);
@@ -77,7 +73,6 @@ const infoTambahan = `
 ===== INFOMASI TAMBAHAN =====
 - Tanggal dan Waktu Sekarang: ${tanggalLengkap}, pukul ${waktuLengkap} WIB
 - Bagian Hari: Saat ini adalah ${waktuHari}.
-- Nakiri sedang berada di blitar jawa timur.
 `;
 
 const systemInstruction = `

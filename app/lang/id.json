@@ -143,9 +143,24 @@
             },
             "ssweb": {
                 "ex" : "Contoh: {command} <url>"
+            },
+            "notes": {
+                "ex": "*Notes.* menyimpan atau membagikan catatan kamu dengan orang lain.\n\n▷ {command} list — Menampilkan semua daftar catatan terbaru yang di publikasikan.\n▷ {command} create — Membuat catatan baru.\n▷ {command} <code> — Melihat catatan tertentu.\n▷ {command} delete <code> — Menghapus catatan tertentu.",
+                "create": {
+                    "ex": "Contoh:\n{command} create\ntitle: isi judul disini.\ncontent: isi konten disini.\n\n> Kamu bisa menambahkan password juga tulis seperti format title dan content",
+                    "success": "Catatan berhasil dibuat.\n\nKode: `{code}`\nCara menampilkannya: {command} {code}"
+                },
+                "delete": {
+                    "ex": "Contoh: {command} delete <code>",
+                    "success": "Catatan berhasil dihapus."
+                },
+                "notFound": "Catatan tidak ditemukan.",
+                "notAuthor": "Kamu bukan pemilik catatan ini.",
+                "requirePassword": "Catatan ini membutuhkan password.\nContoh: {command} {code} <password>",
+                "wrongPassword": "Password salah."
             }
         },
-
+        
         "fun": {
             "anonymousChat" : {
                 "onlyPrivate": "_Tidak bisa di group. Silahkan gunakan di private chat._"

@@ -7,7 +7,7 @@ Command({
   tags : {
     label : 'group'
   },
-  run: async ({ sock, m }) => {
+  run: async ({ m }) => {
     if (!m.isGroup) return;
     if (!m.isSenderAdmin) return;
 
