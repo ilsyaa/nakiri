@@ -18,7 +18,7 @@ import {
   validateCommand,
   DEFAULT_GUARD_MESSAGES,
 } from './command.js'
-import { formatMenuText, getMenuByLabel, getMenuByCategory } from './menu.js'
+import { formatMenuText, getMenuByLabel } from './menu.js'
 import {
   commandRegistry,
   CommandRegistry,
@@ -52,7 +52,6 @@ declare const _default: {
   extractMentionsFromText: typeof extractMentionsFromText
   formatMenuText: typeof formatMenuText
   getMenuByLabel: typeof getMenuByLabel
-  getMenuByCategory: typeof getMenuByCategory
   getKernel: typeof getKernel
   resetKernelCache: typeof resetKernelCache
   getCommandMiddleware: typeof getCommandMiddleware

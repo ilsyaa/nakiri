@@ -69,7 +69,7 @@ import { defineCommand } from '@nakiri/core/services/commands'
 
 export default defineCommand({
   name: 'ping',
-  aliases: ['speed'],
+  aliases: ['ping', 'speed'],
   category: 'utility',
   description: 'Check bot responsiveness and server latency',
   prefix: 'optional', // 'optional', true (default), or false

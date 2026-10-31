@@ -117,19 +117,13 @@ export class CommandRegistry {
 
           this.uniqueCommands.add(def);
 
-          // Register primary trigger
-          const primary = def.name.trim().toLowerCase();
-          this.commandsMap.set(primary, def);
-
-          // Register aliases
-          const aliases = [
-            ...(Array.isArray(def.aliases) ? def.aliases : []),
-            ...(Array.isArray(def.commands) ? def.commands : []),
-          ];
-
-          for (const alias of aliases) {
-            if (typeof alias === 'string' && alias.trim()) {
-              this.commandsMap.set(alias.trim().toLowerCase(), def);
+          // Register command triggers strictly from aliases
+          // 'name' is purely a unique command identifier and is not registered as a trigger
+          if (Array.isArray(def.aliases)) {
+            for (const alias of def.aliases) {
+              if (typeof alias === 'string' && alias.trim()) {
+                this.commandsMap.set(alias.trim().toLowerCase(), def);
+              }
             }
           }
         } catch (err) {

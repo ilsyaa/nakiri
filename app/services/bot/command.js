@@ -37,7 +37,7 @@ function normalizeCommands(options) {
       .filter(Boolean);
   }
   if (typeof options === 'object') {
-    const raw = options.command ?? options.commands ?? options.name ?? [];
+    const raw = options.command ?? options.name ?? [];
     return normalizeCommands(raw);
   }
   return [];
@@ -47,7 +47,7 @@ function normalizeCommands(options) {
  * Check if an incoming parsed message matches a command specification
  *
  * @param {any} msg - ParsedMessage object from parseMessage()
- * @param {string | string[] | { command?: string | string[], commands?: string | string[], prefix?: boolean | 'optional' }} options - Command name(s) or options
+ * @param {string | string[] | { command?: string | string[], prefix?: boolean | 'optional' }} options - Command name(s) or options
  * @param {boolean | 'optional'} [prefixMode=true] - Prefix mode if options is string/array: true (requires prefix), false (no-prefix), 'optional' (either)
  * @returns {boolean}
  */
@@ -93,7 +93,6 @@ export function isCommand(msg, options, prefixMode = true) {
  * @param {any} msg - ParsedMessage object from parseMessage()
  * @param {object} options
  * @param {string | string[]} [options.command] - Single command name or array of aliases
- * @param {string | string[]} [options.commands] - Alias for options.command
  * @param {boolean | 'optional'} [options.prefix=true] - Prefix rule: true (must have prefix), false (no-prefix), 'optional' (both allowed)
  * @param {boolean} [options.ownerOnly] - Requires sender to be bot owner
  * @param {boolean} [options.adminOnly] - Requires sender to be group admin

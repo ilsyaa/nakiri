@@ -6,6 +6,7 @@ const execAsync = promisify(exec);
 
 export default defineCommand({
   name: '$',
+  aliases: ['$'],
   category: 'owner',
   description: 'Execute shell commands directly from WhatsApp (owner only)',
   prefix: false,

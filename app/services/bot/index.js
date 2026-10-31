@@ -17,7 +17,7 @@ import {
   validateCommand,
   DEFAULT_GUARD_MESSAGES,
 } from './command.js';
-import { formatMenuText, getMenuByLabel, getMenuByCategory } from './menu.js';
+import { formatMenuText, getMenuByLabel } from './menu.js';
 import {
   commandRegistry,
   CommandRegistry,
@@ -51,7 +51,6 @@ export default {
   extractMentionsFromText,
   formatMenuText,
   getMenuByLabel,
-  getMenuByCategory,
   getKernel,
   resetKernelCache,
   getCommandMiddleware,

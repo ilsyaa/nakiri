@@ -13,12 +13,10 @@ export interface FormatMenuOptions {
 }
 
 export function getMenuByLabel(): Map<string, MenuItem[]>
-export function getMenuByCategory(): Map<string, MenuItem[]>
 export function formatMenuText(options?: FormatMenuOptions): string
 
 declare const _default: {
   getMenuByLabel: typeof getMenuByLabel
-  getMenuByCategory: typeof getMenuByCategory
   formatMenuText: typeof formatMenuText
 }
 

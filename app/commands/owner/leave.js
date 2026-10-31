@@ -7,7 +7,7 @@ import { clearGroupMetadataCache } from '#app/services/bot/index.js';
 
 export default defineCommand({
   name: 'leave',
-  aliases: ['out'],
+  aliases: ['leave', 'out'],
   category: 'owner',
   description: 'Make bot exit the current group (owner only)',
   middlewares: ['group', 'sender:isOwner'],

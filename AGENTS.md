@@ -145,6 +145,7 @@ import { defineCommand } from '#app/services/bot/index.js'
 
 export default defineCommand({
   name: 'kick',
+  aliases: ['kick'],
   category: 'group',
   description: 'Kick group member by tag or reply',
 
@@ -163,8 +164,8 @@ export default defineCommand({
 
 ### Opsi Definisi Command:
 
-- **`name`** (string): Nama pemicu utama perintah (contoh: `'kick'`, `'ping'`).
-- **`aliases`** (string[]): Alias pemicu alternatif (contoh: `['speed']` atau `['>>']`).
+- **`name`** (string): Nama unik pengenal modul/perintah (contoh: `'kick'`, `'ping'`). Hanya sebagai unique identifier metadata, **BUKAN trigger command**.
+- **`aliases`** (string[]): Daftar trigger command yang dapat dieksekusi pengguna di WhatsApp (contoh: `['kick']`, `['ping']`, `['menu', 'help']`, `['>', '>>']`).
 - **`category`** (string): Kategori perintah untuk pengelompokan menu (contoh: `'group'`, `'utility'`, `'owner'`).
 - **`description`** (string): Deskripsi ringkas dalam Bahasa Inggris baku.
 - **`middlewares`** (string[]): Daftar guard middleware (contoh: `['group', 'sender:isOwner']`).

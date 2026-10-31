@@ -21,18 +21,20 @@ export async function getMenuByLabel() {
   for (const cmd of commands) {
     if (!cmd.name) continue;
 
-    const rawCommands = [
-      cmd.name,
-      ...(Array.isArray(cmd.aliases) ? cmd.aliases : []),
-      ...(Array.isArray(cmd.commands) ? cmd.commands : []),
-    ].filter(Boolean);
+    const aliases = Array.isArray(cmd.aliases)
+      ? cmd.aliases
+          .map((a) => (typeof a === 'string' ? a.trim() : ''))
+          .filter(Boolean)
+      : [];
+
+    if (aliases.length === 0) continue;
 
     const groupName = (cmd.category || 'general').trim().toLowerCase();
 
     const item = {
       name: cmd.name,
       group: groupName,
-      commands: rawCommands,
+      commands: aliases,
       withoutPrefix: Boolean(cmd.withoutPrefix || cmd.prefix === false),
       description: cmd.description || '',
     };
@@ -50,11 +52,6 @@ export async function getMenuByLabel() {
 
   return groups;
 }
-
-/**
- * Backward compatibility alias for getMenuByLabel
- */
-export const getMenuByCategory = getMenuByLabel;
 
 /**
  * Format the menu text for WhatsApp presentation.
@@ -132,6 +129,5 @@ export async function formatMenuText({
 
 export default {
   getMenuByLabel,
-  getMenuByCategory,
   formatMenuText,
 };

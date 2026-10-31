@@ -5,6 +5,7 @@ import { isLidJid } from 'zapo-js';
 
 export default defineCommand({
   name: 'warn',
+  aliases: ['warn'],
   category: 'group',
   description: 'Warn group members',
   middlewares: ['group', 'sender:admin,superAdmin', 'bot:admin'],

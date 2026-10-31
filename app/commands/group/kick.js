@@ -33,7 +33,7 @@ function isParticipantMatch(part, target) {
 
 export default defineCommand({
   name: 'kick',
-  commands: ['kick'],
+  aliases: ['kick'],
   category: 'group',
   description: 'Kick group member by tag or reply',
   middlewares: ['group', 'sender:admin,superAdmin', 'bot:admin'],

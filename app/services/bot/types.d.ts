@@ -23,7 +23,8 @@ export type CommandMiddlewareResolver = (
 
 export interface CommandDefinition {
   /**
-   * Primary command trigger name (e.g. 'kick', 'owner', 'ping')
+   * Unique command identifier name (e.g. 'kick', 'owner', 'ping')
+   * Strictly metadata, NOT used as a command trigger.
    */
   readonly name: string
 
@@ -38,14 +39,9 @@ export interface CommandDefinition {
   readonly category?: string
 
   /**
-   * Command aliases or alternative triggers (e.g. ['pong', 'speed'] or ['>', '>>'])
+   * Command triggers executed by user in WhatsApp (e.g. ['kick'], ['ping'], ['menu', 'help'])
    */
-  readonly aliases?: string[]
-
-  /**
-   * Alternative aliases array (backward-compatible)
-   */
-  readonly commands?: string[]
+  readonly aliases: string[]
 
   /**
    * Parameterized middleware rules applied before execute()

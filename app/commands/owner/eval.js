@@ -7,7 +7,7 @@ import cache from '@nakiri/core/services/cache';
 
 export default defineCommand({
   name: '>',
-  aliases: ['>>'],
+  aliases: ['>', '>>'],
   category: 'owner',
   description: 'Evaluate JavaScript code directly from WhatsApp (owner only)',
   prefix: false,
