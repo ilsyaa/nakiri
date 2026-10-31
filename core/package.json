@@ -1,0 +1,47 @@
+{
+  "name": "@nakiri/core",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    "./services/database": {
+      "types": "./services/database/index.d.ts",
+      "default": "./services/database/index.js"
+    },
+    "./services/env": {
+      "types": "./services/env/index.d.ts",
+      "default": "./services/env/index.js"
+    },
+    "./services/modules": {
+      "types": "./services/modules/index.d.ts",
+      "default": "./services/modules/index.js"
+    },
+    "./services/whatsapp": {
+      "types": "./services/whatsapp/index.d.ts",
+      "default": "./services/whatsapp/index.js"
+    },
+    "./services/cli": {
+      "types": "./services/cli/index.d.ts",
+      "default": "./services/cli/index.js"
+    },
+    "./services/starts": {
+      "types": "./services/starts/index.d.ts",
+      "default": "./services/starts/index.js"
+    },
+    "./services/cache": {
+      "types": "./services/cache/index.d.ts",
+      "default": "./services/cache/index.js"
+    },
+    "./server": {
+      "types": "./server.d.ts",
+      "default": "./server.js"
+    },
+    "./*.js": {
+      "types": "./*.d.ts",
+      "default": "./*.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "default": "./*.js"
+    }
+  }
+}

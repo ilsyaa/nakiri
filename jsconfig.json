@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0,
+    "paths": {
+      "@nakiri/core/*": [
+        "./core/*"
+      ],
+      "#app/*": [
+        "./app/*"
+      ]
+    },
+  },
+  "include": [
+    "./app/**/*.js",
+    "./app/**/*.ts",
+    "./app/**/*.d.ts",
+    "./core/**/*.d.ts",
+    "./core/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "storage"
+  ]
+}

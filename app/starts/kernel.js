@@ -1,0 +1,32 @@
+/**
+ * Scoped event middlewares configuration.
+ *
+ * Scoped middlewares execute in declaration order when a native WhatsApp event occurs.
+ *
+ * @type {import('@nakiri/core/services/modules').EventMiddlewaresConfig}
+ */
+export const eventMiddlewares = {
+  message: [
+    () => import('#app/middlewares/ignore.js'),
+    () => import('#app/middlewares/group_score.js'),
+  ],
+};
+
+/**
+ * Custom command middleware aliases for command definitions.
+ *
+ * @type {import('#app/services/bot/types.js').MiddlewareAliasesConfig}
+ */
+export const middlewareAliases = {
+  sender: () => import('#app/middlewares/guards.js').then((m) => m.senderGuard),
+  bot: () => import('#app/middlewares/guards.js').then((m) => m.botGuard),
+  group: () =>
+    import('#app/middlewares/guards.js').then((m) => m.groupOnlyGuard),
+  private: () =>
+    import('#app/middlewares/guards.js').then((m) => m.privateOnlyGuard),
+};
+
+export default {
+  eventMiddlewares,
+  middlewareAliases,
+};
