@@ -1,6 +1,6 @@
 import { defineCommand } from '#app/services/bot/index.js';
 import db from '@nakiri/core/services/database';
-import { nowUtc } from '#app/services/time.js';
+import { DateTime } from 'luxon';
 import { isLidJid } from 'zapo-js';
 
 export default defineCommand({
@@ -104,7 +104,7 @@ export default defineCommand({
         `Dikeluarkan karena telah mencapai batas peringatan (${currentWarn}/${maxWarn}).`
       );
     } else {
-      const now = nowUtc();
+      const now = DateTime.utc().toSQL({ includeOffset: false });
       await db('group_members').where({ id: targetMember.id }).update({
         warnings: currentWarn,
         last_warned_at: now,

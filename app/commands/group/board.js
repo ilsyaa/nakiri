@@ -1,6 +1,6 @@
 import { defineCommand } from '#app/services/bot/index.js';
 import db from '@nakiri/core/services/database';
-import { parseUtc } from '#app/services/time.js';
+import { DateTime } from 'luxon';
 
 export default defineCommand({
   name: 'board',
@@ -51,7 +51,9 @@ export default defineCommand({
 
       let lastSeenText = '-';
       if (member.last_interacted_at) {
-        const last = parseUtc(member.last_interacted_at);
+        const last = DateTime.fromSQL(member.last_interacted_at, {
+          zone: 'utc',
+        });
         if (last && last.isValid) {
           const relative = last.toRelative({ locale: 'en' });
           lastSeenText = `${relative}`;

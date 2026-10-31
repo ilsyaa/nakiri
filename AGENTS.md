@@ -78,8 +78,7 @@ nakiri/
 │   │   └── utility/              # Utility commands (ping, menu)
 │   ├── services/                 # Shared business logic & bot engine
 │   │   ├── bot/                  # Bot service (command registry, message parser, menu builder, runner)
-│   │   ├── owner.js              # Owner management service
-│   │   └── time.js               # Date/time utilities
+│   │   └── owner.js              # Owner management service
 │   └── database/                 # Migrations & Seeds
 ├── storage/                      # SQLite DB, session WhatsApp, temp storage
 ├── nakiri.js                     # Centralized Nakiri CLI runner
@@ -100,7 +99,6 @@ nakiri/
    - Gunakan Subpath Import `#app/...`.
    - ✅ `import { defineCommand } from '#app/services/bot/index.js';`
    - ✅ `import { getGroupMetadata, clearGroupMetadataCache } from '#app/services/bot/index.js';`
-   - ✅ `import { nowUtc, parseUtc } from '#app/services/time.js';`
    - ✅ `import { checkOwnerAccess } from '#app/services/owner.js';`
 
 ---

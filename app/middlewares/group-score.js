@@ -1,6 +1,6 @@
 import cache from '@nakiri/core/services/cache';
 import db from '@nakiri/core/services/database';
-import { nowUtc, parseUtc, DateTime } from '#app/services/time.js';
+import { DateTime } from 'luxon';
 
 /**
  * Debounced group member interaction scoring middleware.
@@ -21,7 +21,7 @@ export default async function groupScoreMiddleware(payload, ctx) {
   if (cache.has(cooldownKey)) return;
 
   if (member.last_interacted_at) {
-    const last = parseUtc(member.last_interacted_at);
+    const last = DateTime.fromSQL(member.last_interacted_at, { zone: 'utc' });
     if (last && last.isValid) {
       const diffMinutes = DateTime.utc().diff(last, 'minutes').minutes;
       if (diffMinutes < 10) {
@@ -36,7 +36,7 @@ export default async function groupScoreMiddleware(payload, ctx) {
   }
 
   cache.set(cooldownKey, true, '10m');
-  const now = nowUtc();
+  const now = DateTime.utc().toSQL({ includeOffset: false });
 
   await db('group_members')
     .where({ id: member.id })
@@ -48,4 +48,3 @@ export default async function groupScoreMiddleware(payload, ctx) {
   member.score = Number(member.score ?? 0) + 1;
   member.last_interacted_at = now;
 }
-
