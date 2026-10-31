@@ -3,7 +3,6 @@ import { databaseCommands } from './commands/database.js';
 import { makeCommands } from './commands/make.js';
 import { startServerCommand } from './commands/server.js';
 import { eventCommands } from './commands/event.js';
-import { botCommandCommands } from './commands/bot-command.js';
 
 export * from './registry.js';
 
@@ -24,10 +23,6 @@ for (const cmd of makeCommands) {
 }
 
 for (const cmd of eventCommands) {
-  cliRegistry.register(cmd);
-}
-
-for (const cmd of botCommandCommands) {
   cliRegistry.register(cmd);
 }
 

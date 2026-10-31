@@ -6,6 +6,10 @@ export const defaultGroupSettings = {
   botAccess: 'everyone',
   maxWarn: 3,
   blockedWords: [],
+  emojiShortcuts: {
+    '❌': 'kick',
+    '⚠️': 'warn',
+  },
 };
 
 /**

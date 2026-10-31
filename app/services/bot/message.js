@@ -16,7 +16,7 @@ import { isCommand, validateCommand } from './command.js';
  * @param {string | null | undefined} jid
  * @returns {string | null}
  */
-function safeUserJid(jid) {
+export function safeUserJid(jid) {
   if (!jid || typeof jid !== 'string') return null;
   try {
     return toUserJid(jid);
@@ -93,7 +93,7 @@ export async function getBotSettings() {
  * @param {boolean} [fromMe]
  * @returns {boolean}
  */
-function checkIsOwner(sender, botSettingsOrOwners = null, fromMe = false) {
+export function checkIsOwner(sender, botSettingsOrOwners = null, fromMe = false) {
   if (fromMe) return true;
   if (!sender) return false;
 
