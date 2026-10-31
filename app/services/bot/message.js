@@ -450,9 +450,21 @@ export async function parseMessage(payload, client = null) {
 
   const key = payload?.key || {};
   const fromMe = Boolean(key.fromMe);
-  const isGroup = Boolean(key.isGroup);
-  const isBroadcast = Boolean(key.isBroadcast);
-  const isNewsletter = Boolean(key.isNewsletter);
+  const isGroup = Boolean(
+    key.isGroup !== undefined
+      ? key.isGroup
+      : key.remoteJid?.endsWith('@g.us')
+  );
+  const isBroadcast = Boolean(
+    key.isBroadcast !== undefined
+      ? key.isBroadcast
+      : key.remoteJid?.endsWith('@broadcast')
+  );
+  const isNewsletter = Boolean(
+    key.isNewsletter !== undefined
+      ? key.isNewsletter
+      : key.remoteJid?.endsWith('@newsletter')
+  );
 
   // Extract raw message content for type detection
   let raw = payload?.message || payload;
@@ -686,6 +698,7 @@ export async function parseMessage(payload, client = null) {
       expiration,
     },
     quoted,
+    group: groupMeta || null,
   };
 
   // Attach non-enumerable helper wrappers to avoid polluting console.log(msg)

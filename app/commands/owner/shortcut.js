@@ -9,7 +9,7 @@ import {
 
 export default defineCommand({
   name: 'shortcut',
-  aliases: ['reactcmd', 'emojicmd', 'sc'],
+  aliases: ['reactcmd', 'emojicmd'],
   category: 'owner',
   description: 'Manage global emoji reaction command shortcuts for the bot',
   middlewares: ['sender:isOwner'],
@@ -43,12 +43,11 @@ export default defineCommand({
         );
       }
 
-      const cleanCmd = cmdInput.replace(/^[./!#$]/, '').trim().toLowerCase();
-      if (
-        cleanCmd === 'shortcut' ||
-        cleanCmd === 'reactcmd' ||
-        cleanCmd === 'sc'
-      ) {
+      const cleanCmd = cmdInput
+        .replace(/^[./!#$]/, '')
+        .trim()
+        .toLowerCase();
+      if (cleanCmd === 'shortcut' || cleanCmd === 'reactcmd') {
         return msg.reply(
           'Tidak dapat mendaftarkan perintah shortcut sebagai pemicu reaksi.'
         );

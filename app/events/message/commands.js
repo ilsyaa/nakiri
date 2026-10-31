@@ -12,11 +12,8 @@ export default defineModule({
   description: 'Native WhatsApp message event gateway and command dispatcher',
 
   async execute(payload, ctx) {
-    // 1. Run scoped message event middlewares (ignore filter, parse ctx.msg, group score & access)
     const passed = await runEventMiddlewares('message', payload, ctx);
     if (!passed || ctx.isStopped || !ctx.msg) return;
-
-    // 2. Dispatch message to matching bot command in registry
     await dispatchCommand(payload, ctx);
   },
 });

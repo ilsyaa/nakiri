@@ -50,6 +50,8 @@ Nakiri Architecture v2 separates concerns into clean, decoupled layers:
    - Never create or edit files in `core/` unless explicitly instructed by the user. All userland logic belongs strictly in `app/`.
 5. **Concise Guard Rejections**:
    - Access control rejections must be ultra-concise: `'Only Owner!'`, `'Only Admin!'`, `'Only in Group!'`, `'Bot is not Admin!'`.
+6. **No Automated Git Commits**:
+   - AI agents are **STRICTLY FORBIDDEN** from executing `git commit` or committing changes automatically. Always leave committing to the human developer. Agents may only provide a suggested Conventional Commit message for the developer to execute manually.
 
 ---
 

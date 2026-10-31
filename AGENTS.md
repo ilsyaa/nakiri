@@ -23,6 +23,9 @@ Dokumen ini adalah pedoman arsitektur dan standar rekayasa software untuk bot **
 >    - Validasi hak akses **WAJIB** menggunakan parameterized middlewares di properti `middlewares: [...]` (contoh: `['group', 'sender:admin,superAdmin,isOwner', 'bot:admin']`).
 > 6. **Pesan Penolakan Ringkas (Concise Guard Messages):**
 >    - Jika terjadi kegagalan validasi hak akses, gunakan pesan penolakan yang ultra-ringkas dan to-the-point (`Only Owner!`, `Only Admin!`, `Only in Group!`, `Bot is not Admin!`). Jangan membanjiri chat WhatsApp dengan pesan penolakan yang panjang dan bertele-tele.
+> 7. **DILARANG Auto-Commit Git (No Automated Git Commits):**
+>    - AI Agent **DILARANG KERAS** menjalankan perintah `git commit` atau membuat commit secara otomatis. Biarkan developer yang melakukan commit sendiri (*"biar dev-nya aja yang commit"*).
+>    - AI Agent hanya diperbolehkan memberikan rekomendasi pesan commit (*suggested Conventional Commit message*) di akhir respons untuk direview dan dieksekusi secara manual oleh developer.
 
 ---
 
