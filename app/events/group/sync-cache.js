@@ -3,6 +3,7 @@ import {
   clearGroupMetadataCache,
   getGroupMetadata,
 } from '#app/services/bot/index.js';
+import cache from '@nakiri/core/services/cache/index';
 
 export default defineModule({
   name: 'group-sync',
@@ -18,6 +19,7 @@ export default defineModule({
 
     // Invalidate stale cache
     clearGroupMetadataCache(groupJid);
+    cache.delete(`table_group:${groupJid}`);
 
     // Eagerly pre-warm cache with latest metadata from WhatsApp server
     if (ctx?.client?.group?.queryGroupMetadata) {

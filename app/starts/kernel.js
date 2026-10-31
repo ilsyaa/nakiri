@@ -7,8 +7,8 @@
  */
 export const eventMiddlewares = {
   message: [
-    () => import('#app/middlewares/ignore.js'),
-    () => import('#app/middlewares/group_score.js'),
+    () => import('#app/middlewares/bot-ignore.js'),
+    () => import('#app/middlewares/group.js'),
   ],
 };
 
@@ -18,12 +18,13 @@ export const eventMiddlewares = {
  * @type {import('#app/services/bot/types.js').MiddlewareAliasesConfig}
  */
 export const middlewareAliases = {
-  sender: () => import('#app/middlewares/guards.js').then((m) => m.senderGuard),
-  bot: () => import('#app/middlewares/guards.js').then((m) => m.botGuard),
+  sender: () =>
+    import('#app/middlewares/bot-guards.js').then((m) => m.senderGuard),
+  bot: () => import('#app/middlewares/bot-guards.js').then((m) => m.botGuard),
   group: () =>
-    import('#app/middlewares/guards.js').then((m) => m.groupOnlyGuard),
+    import('#app/middlewares/bot-guards.js').then((m) => m.groupOnlyGuard),
   private: () =>
-    import('#app/middlewares/guards.js').then((m) => m.privateOnlyGuard),
+    import('#app/middlewares/bot-guards.js').then((m) => m.privateOnlyGuard),
 };
 
 export default {

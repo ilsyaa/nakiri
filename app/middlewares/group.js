@@ -13,7 +13,7 @@ export const defaultGroupSettings = {
  *
  * @type {import('@nakiri/core/services/modules').EventMiddleware<'message'>}
  */
-export default async function groupScoreMiddleware(payload, ctx) {
+export default async function groupMiddleware(payload, ctx) {
   const msg = ctx.msg;
   if (!msg?.flags?.isGroup) return;
 
