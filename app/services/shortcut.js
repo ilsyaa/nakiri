@@ -1,7 +1,7 @@
 import db from '@nakiri/core/services/database';
 import cache from '@nakiri/core/services/cache';
 import logger from '@nakiri/core/utils/logger';
-import { defaultGroupSettings } from '#app/middlewares/group.js';
+import { clearBotSettingsCache } from '#app/services/bot/index.js';
 
 export const DEFAULT_SHORTCUTS = {
   '❌': 'kick',
@@ -25,199 +25,123 @@ export function isEmoji(str) {
 }
 
 /**
- * Fetch group settings from database or cache.
+ * Get all active global emoji reaction shortcuts.
  *
- * @param {string} chatJid
- * @returns {Promise<Record<string, any>>}
- */
-export async function getGroupSettings(chatJid) {
-  if (!chatJid) return { ...defaultGroupSettings };
-
-  return await cache.remember(`table_group:${chatJid}`, '15m', async () => {
-    let group = await db('groups').where({ id: chatJid }).first();
-
-    if (!group) {
-      await db('groups')
-        .insert({
-          id: chatJid,
-          settings: JSON.stringify(defaultGroupSettings),
-        })
-        .onConflict('id')
-        .ignore();
-
-      group = await db('groups').where({ id: chatJid }).first();
-    }
-
-    let parsedSettings = {};
-    if (group?.settings) {
-      try {
-        parsedSettings =
-          typeof group.settings === 'string'
-            ? JSON.parse(group.settings)
-            : group.settings;
-      } catch {}
-    }
-
-    if (group) {
-      group.settings = {
-        ...defaultGroupSettings,
-        ...parsedSettings,
-      };
-    }
-
-    return group || null;
-  }).then((res) => res?.settings || { ...defaultGroupSettings });
-}
-
-/**
- * Save updated group settings to database and invalidate caches.
- *
- * @param {string} chatJid
- * @param {Record<string, any>} newSettings
- * @returns {Promise<void>}
- */
-export async function saveGroupSettings(chatJid, newSettings) {
-  if (!chatJid) return;
-
-  const existing = await db('groups').where({ id: chatJid }).first();
-  if (existing) {
-    await db('groups')
-      .where({ id: chatJid })
-      .update({
-        settings: JSON.stringify(newSettings),
-      });
-  } else {
-    await db('groups')
-      .insert({
-        id: chatJid,
-        settings: JSON.stringify(newSettings),
-      })
-      .onConflict('id')
-      .ignore();
-  }
-
-  cache.delete(`table_group:${chatJid}`);
-  cache.delete(`shortcuts:${chatJid}`);
-}
-
-/**
- * Get all active emoji reaction shortcuts for a group.
- *
- * @param {string} chatJid
  * @returns {Promise<Record<string, string>>} Map of emoji -> commandName
  */
-export async function getShortcuts(chatJid) {
-  if (!chatJid) return { ...DEFAULT_SHORTCUTS };
+export async function getShortcuts() {
+  return await cache.remember('global_shortcuts', '15m', async () => {
+    try {
+      const bot = await db('bots').first();
+      let shortcuts = {};
+      if (bot?.shortcuts) {
+        try {
+          shortcuts =
+            typeof bot.shortcuts === 'string'
+              ? JSON.parse(bot.shortcuts)
+              : bot.shortcuts;
+        } catch {}
+      }
 
-  return await cache.remember(`shortcuts:${chatJid}`, '15m', async () => {
-    const settings = await getGroupSettings(chatJid);
-    if (
-      settings &&
-      typeof settings.emojiShortcuts === 'object' &&
-      settings.emojiShortcuts !== null
-    ) {
-      return { ...settings.emojiShortcuts };
+      if (
+        shortcuts &&
+        typeof shortcuts === 'object' &&
+        Object.keys(shortcuts).length > 0
+      ) {
+        return { ...shortcuts };
+      }
+      return { ...DEFAULT_SHORTCUTS };
+    } catch (err) {
+      logger.error(
+        '[SHORTCUT]',
+        `Failed to load global shortcuts from database: ${err.message}`
+      );
+      return { ...DEFAULT_SHORTCUTS };
     }
-    return { ...DEFAULT_SHORTCUTS };
   });
 }
 
 /**
- * Get the command mapped to a specific emoji reaction in a group.
+ * Get the command mapped to a specific emoji reaction globally.
  *
- * @param {string} chatJid
  * @param {string} emoji
  * @returns {Promise<string | null>}
  */
-export async function getShortcutCommand(chatJid, emoji) {
-  if (!chatJid || !emoji) return null;
-  const shortcuts = await getShortcuts(chatJid);
+export async function getShortcutCommand(emoji) {
+  if (!emoji) return null;
+  const shortcuts = await getShortcuts();
   const normalizedEmoji = emoji.trim();
   return shortcuts[normalizedEmoji] || null;
 }
 
 /**
- * Associate an emoji reaction with a bot command for a group.
+ * Save global emoji shortcuts to the database and invalidate caches.
  *
- * @param {string} chatJid
+ * @param {Record<string, string>} shortcuts
+ * @returns {Promise<void>}
+ */
+export async function saveShortcuts(shortcuts) {
+  const row = await db('bots').first();
+  const serialized = JSON.stringify(shortcuts);
+
+  if (row) {
+    await db('bots').where({ id: row.id }).update({ shortcuts: serialized });
+  } else {
+    await db('bots').insert({ shortcuts: serialized });
+  }
+
+  cache.delete('global_shortcuts');
+  clearBotSettingsCache();
+}
+
+/**
+ * Associate an emoji reaction with a bot command globally.
+ *
  * @param {string} emoji
  * @param {string} commandName
  * @returns {Promise<Record<string, string>>}
  */
-export async function setShortcut(chatJid, emoji, commandName) {
-  if (!chatJid) throw new Error('Chat JID is required');
+export async function setShortcut(emoji, commandName) {
   if (!isEmoji(emoji)) throw new Error('Invalid emoji format');
 
   const cleanCmd = commandName.replace(/^[./!#$]/, '').trim().toLowerCase();
   if (!cleanCmd) throw new Error('Command name cannot be empty');
 
-  const settings = await getGroupSettings(chatJid);
-  const currentShortcuts =
-    settings && typeof settings.emojiShortcuts === 'object' && settings.emojiShortcuts !== null
-      ? { ...settings.emojiShortcuts }
-      : { ...DEFAULT_SHORTCUTS };
-
+  const currentShortcuts = { ...(await getShortcuts()) };
   currentShortcuts[emoji.trim()] = cleanCmd;
 
-  settings.emojiShortcuts = currentShortcuts;
-  await saveGroupSettings(chatJid, settings);
+  await saveShortcuts(currentShortcuts);
 
-  logger.info(
-    '[SHORTCUT]',
-    `Set shortcut in group ${chatJid}: ${emoji} -> ${cleanCmd}`
-  );
-
+  logger.info('[SHORTCUT]', `Global shortcut set: ${emoji} -> ${cleanCmd}`);
   return currentShortcuts;
 }
 
 /**
- * Delete an emoji shortcut binding in a group.
+ * Delete a global emoji shortcut binding.
  *
- * @param {string} chatJid
  * @param {string} emoji
  * @returns {Promise<Record<string, string>>}
  */
-export async function deleteShortcut(chatJid, emoji) {
-  if (!chatJid) throw new Error('Chat JID is required');
-
-  const settings = await getGroupSettings(chatJid);
-  const currentShortcuts =
-    settings && typeof settings.emojiShortcuts === 'object' && settings.emojiShortcuts !== null
-      ? { ...settings.emojiShortcuts }
-      : { ...DEFAULT_SHORTCUTS };
-
+export async function deleteShortcut(emoji) {
+  const currentShortcuts = { ...(await getShortcuts()) };
   const targetEmoji = emoji.trim();
   delete currentShortcuts[targetEmoji];
 
-  settings.emojiShortcuts = currentShortcuts;
-  await saveGroupSettings(chatJid, settings);
+  await saveShortcuts(currentShortcuts);
 
-  logger.info(
-    '[SHORTCUT]',
-    `Deleted shortcut in group ${chatJid}: ${targetEmoji}`
-  );
-
+  logger.info('[SHORTCUT]', `Global shortcut deleted: ${targetEmoji}`);
   return currentShortcuts;
 }
 
 /**
- * Reset emoji shortcuts in a group back to defaults.
+ * Reset global emoji shortcuts back to defaults.
  *
- * @param {string} chatJid
  * @returns {Promise<Record<string, string>>}
  */
-export async function resetShortcuts(chatJid) {
-  if (!chatJid) throw new Error('Chat JID is required');
+export async function resetShortcuts() {
+  await saveShortcuts({ ...DEFAULT_SHORTCUTS });
 
-  const settings = await getGroupSettings(chatJid);
-  settings.emojiShortcuts = { ...DEFAULT_SHORTCUTS };
-  await saveGroupSettings(chatJid, settings);
-
-  logger.info(
-    '[SHORTCUT]',
-    `Reset shortcuts to defaults in group ${chatJid}`
-  );
-
+  logger.info('[SHORTCUT]', 'Global shortcuts reset to defaults');
   return { ...DEFAULT_SHORTCUTS };
 }
 
@@ -256,10 +180,9 @@ export function findParticipant(participants, target) {
 export default {
   DEFAULT_SHORTCUTS,
   isEmoji,
-  getGroupSettings,
-  saveGroupSettings,
   getShortcuts,
   getShortcutCommand,
+  saveShortcuts,
   setShortcut,
   deleteShortcut,
   resetShortcuts,

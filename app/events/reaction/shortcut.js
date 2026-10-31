@@ -1,6 +1,8 @@
 import { defineModule } from '@nakiri/core/services/modules';
+import db from '@nakiri/core/services/database';
 import cache from '@nakiri/core/services/cache';
 import logger from '@nakiri/core/utils/logger';
+import { isLidJid } from 'zapo-js';
 import {
   dispatchCommand,
   getCommand,
@@ -14,15 +16,15 @@ import {
 import {
   getShortcutCommand,
   findParticipant,
-  getGroupSettings,
 } from '#app/services/shortcut.js';
+import { defaultGroupSettings } from '#app/middlewares/group.js';
 
 export default defineModule({
   name: 'reaction-shortcut',
   events: ['message_addon', 'message'],
   level: 10,
   category: 'reaction',
-  description: 'Trigger bot commands via emoji reaction shortcuts',
+  description: 'Trigger bot commands via global emoji reaction shortcuts',
 
   async execute(payload, ctx) {
     // 1. Identify reaction payload (either from message_addon or plaintext reactionMessage)
@@ -35,10 +37,10 @@ export default defineModule({
 
     if (!reaction) return;
 
-    // 2. Validate group context and reject bot's own reactions
+    // 2. Extract chat context and reject bot's own reactions
     const key = payload?.key || {};
     const chatJid = key.remoteJid;
-    if (!chatJid || !chatJid.endsWith('@g.us')) return;
+    if (!chatJid) return;
     if (key.fromMe) return;
 
     // 3. Extract emoji glyph and target message ID
@@ -49,7 +51,8 @@ export default defineModule({
     const targetId = targetKey.id || payload.targetMessageId;
     if (!targetId) return;
 
-    const reactorJid = key.participant;
+    const isGroup = Boolean(chatJid.endsWith('@g.us'));
+    const reactorJid = isGroup ? key.participant : key.remoteJid;
     if (!reactorJid) return;
 
     // 4. In-memory deduplication (15s TTL) to prevent duplicate executions from dual events
@@ -57,8 +60,8 @@ export default defineModule({
     if (cache.has(dedupeKey)) return;
     cache.set(dedupeKey, true, '15s');
 
-    // 5. Look up command mapped to this emoji in the group
-    const commandName = await getShortcutCommand(chatJid, emoji);
+    // 5. Look up global command mapped to this emoji by the bot owner
+    const commandName = await getShortcutCommand(emoji);
     if (!commandName) return;
 
     const cmdDef = await getCommand(commandName);
@@ -72,9 +75,13 @@ export default defineModule({
 
     const client = ctx.client;
 
-    // 6. Fetch live group roster and metadata
-    const metadata = await getGroupMetadata(client, chatJid);
-    const participants = metadata?.participants || [];
+    // 6. Fetch group roster if in group context
+    let metadata = null;
+    let participants = [];
+    if (isGroup) {
+      metadata = await getGroupMetadata(client, chatJid);
+      participants = metadata?.participants || [];
+    }
 
     // 7. Resolve bot credentials and administrative permissions
     let botPn = null;
@@ -87,12 +94,17 @@ export default defineModule({
       }
     } catch {}
 
-    const botPart = findParticipant(participants, botPn || botLid);
+    const botPart = isGroup
+      ? findParticipant(participants, botPn || botLid)
+      : null;
     const botIsAdmin = Boolean(botPart?.isAdmin);
     const botIsSuperAdmin = Boolean(botPart?.isSuperAdmin);
 
     // 8. Resolve reactor participant and permissions
-    const reactorPart = findParticipant(participants, reactorJid);
+    const reactorPart = isGroup
+      ? findParticipant(participants, reactorJid)
+      : null;
+
     const reactorPn = reactorPart?.phoneNumber
       ? reactorPart.phoneNumber.includes('@')
         ? reactorPart.phoneNumber
@@ -125,7 +137,9 @@ export default defineModule({
       : targetKey.participant ||
         (targetKey.remoteJid && targetKey.remoteJid !== chatJid
           ? targetKey.remoteJid
-          : null);
+          : isGroup
+            ? null
+            : chatJid);
 
     // Fallback to local message store if target author is omitted by peer
     if (!targetSenderJid && client?.stores?.messages?.getById) {
@@ -147,7 +161,7 @@ export default defineModule({
       return;
     }
 
-    const targetPart = targetSenderJid
+    const targetPart = isGroup && targetSenderJid
       ? findParticipant(participants, targetSenderJid)
       : null;
 
@@ -176,12 +190,30 @@ export default defineModule({
         )
       : false;
 
-    // 10. Load group settings for ctx.tableGroup
-    const groupSettings = await getGroupSettings(chatJid);
-    ctx.tableGroup = {
-      id: chatJid,
-      settings: groupSettings,
-    };
+    // 10. Load group settings for ctx.tableGroup if in group context
+    if (isGroup) {
+      const tableGroup = await cache.remember(
+        `table_group:${chatJid}`,
+        '15m',
+        async () => {
+          let group = await db('groups').where({ id: chatJid }).first();
+          let parsed = {};
+          if (group?.settings) {
+            try {
+              parsed =
+                typeof group.settings === 'string'
+                  ? JSON.parse(group.settings)
+                  : group.settings;
+            } catch {}
+          }
+          return {
+            id: chatJid,
+            settings: { ...defaultGroupSettings, ...parsed },
+          };
+        }
+      );
+      ctx.tableGroup = tableGroup;
+    }
 
     // 11. Construct synthetic QuotedMessage and ParsedMessage objects
     const quotedTarget = {
@@ -189,7 +221,11 @@ export default defineModule({
       key: {
         id: targetId,
         remoteJid: chatJid,
-        participant: targetFromMe ? undefined : targetSenderJid || undefined,
+        participant: isGroup
+          ? targetFromMe
+            ? undefined
+            : targetSenderJid || undefined
+          : undefined,
         fromMe: targetFromMe,
       },
     };
@@ -247,11 +283,13 @@ export default defineModule({
         pn: botPn,
         lid: botLid,
       },
-      group: {
-        id: chatJid,
-        subject: metadata?.subject || '',
-        participants,
-      },
+      group: isGroup
+        ? {
+            id: chatJid,
+            subject: metadata?.subject || '',
+            participants,
+          }
+        : null,
       permissions: {
         sender: {
           admin: reactorAdmin,
@@ -266,7 +304,7 @@ export default defineModule({
       },
       flags: {
         fromMe: false,
-        isGroup: true,
+        isGroup,
         isText: true,
         isMedia: false,
         isImage: false,
@@ -297,7 +335,7 @@ export default defineModule({
 
     logger.info(
       '[SHORTCUT]',
-      `Triggering command '.${commandName}' from reaction '${emoji}' by ${reactorJid} in ${chatJid}`
+      `Triggering global command '.${commandName}' from reaction '${emoji}' by ${reactorJid} in ${chatJid}`
     );
 
     // 12. Dispatch to command registry with all parameterized guards strictly applied

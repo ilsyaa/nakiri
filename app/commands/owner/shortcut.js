@@ -10,9 +10,9 @@ import {
 export default defineCommand({
   name: 'shortcut',
   aliases: ['reactcmd', 'emojicmd', 'sc'],
-  category: 'group',
-  description: 'Manage emoji reaction command shortcuts for the group',
-  middlewares: ['group', 'sender:admin,superAdmin,isOwner'],
+  category: 'owner',
+  description: 'Manage global emoji reaction command shortcuts for the bot',
+  middlewares: ['sender:isOwner'],
 
   async execute(payload, ctx) {
     const { msg } = ctx;
@@ -22,7 +22,7 @@ export default defineCommand({
     const args = Array.isArray(msg.body?.args) ? [...msg.body.args] : [];
     const action = args[0]?.toLowerCase();
 
-    // 1. Set shortcut: .shortcut -set <emoji> <command>
+    // 1. Set global shortcut: .shortcut -set <emoji> <command>
     if (action === '-set' || action === 'set') {
       const emojiInput = args[1];
       const cmdInput = args[2];
@@ -44,7 +44,11 @@ export default defineCommand({
       }
 
       const cleanCmd = cmdInput.replace(/^[./!#$]/, '').trim().toLowerCase();
-      if (cleanCmd === 'shortcut' || cleanCmd === 'reactcmd' || cleanCmd === 'sc') {
+      if (
+        cleanCmd === 'shortcut' ||
+        cleanCmd === 'reactcmd' ||
+        cleanCmd === 'sc'
+      ) {
         return msg.reply(
           'Tidak dapat mendaftarkan perintah shortcut sebagai pemicu reaksi.'
         );
@@ -57,13 +61,13 @@ export default defineCommand({
         );
       }
 
-      await setShortcut(msg.chat, emojiInput, cleanCmd);
+      await setShortcut(emojiInput, cleanCmd);
       return msg.reply(
-        `Berhasil mengatur shortcut: ${emojiInput} ➔ \`${cleanCmd}\``
+        `Berhasil mengatur shortcut global: ${emojiInput} ➔ \`${cleanCmd}\``
       );
     }
 
-    // 2. Delete shortcut: .shortcut -del <emoji>
+    // 2. Delete global shortcut: .shortcut -del <emoji>
     if (action === '-del' || action === 'del' || action === '-delete') {
       const emojiInput = args[1];
 
@@ -77,34 +81,34 @@ export default defineCommand({
         );
       }
 
-      await deleteShortcut(msg.chat, emojiInput);
+      await deleteShortcut(emojiInput);
       return msg.reply(
-        `Berhasil menghapus shortcut untuk emoji ${emojiInput}.`
+        `Berhasil menghapus shortcut global untuk emoji ${emojiInput}.`
       );
     }
 
-    // 3. Reset shortcuts: .shortcut -reset
+    // 3. Reset global shortcuts: .shortcut -reset
     if (action === '-reset' || action === 'reset') {
-      await resetShortcuts(msg.chat);
+      await resetShortcuts();
       return msg.reply(
-        'Berhasil mereset shortcut emoji grup ke pengaturan default (❌ ➔ kick, ⚠️ ➔ warn).'
+        'Berhasil mereset shortcut emoji global ke pengaturan default (❌ ➔ kick, ⚠️ ➔ warn).'
       );
     }
 
-    // 4. Default / List shortcuts: .shortcut or .shortcut -list
-    const activeShortcuts = await getShortcuts(msg.chat);
+    // 4. Default / List global shortcuts: .shortcut or .shortcut -list
+    const activeShortcuts = await getShortcuts();
     const entries = Object.entries(activeShortcuts);
 
     const listLines =
       entries.length > 0
         ? entries.map(([emoji, cmd]) => `* ${emoji} ➔ \`${cmd}\``).join('\n')
-        : '*(Belum ada shortcut emoji yang aktif)*';
+        : '*(Belum ada shortcut emoji global yang aktif)*';
 
     const text = [
-      '｢ EMOJI SHORTCUTS ｣',
+      '｢ GLOBAL EMOJI SHORTCUTS ｣',
       listLines,
       '',
-      'Penggunaan:',
+      'Penggunaan (Owner):',
       `* \`${prefix}shortcut -set <emoji> <command>\``,
       `* \`${prefix}shortcut -del <emoji>\``,
       `* \`${prefix}shortcut -reset\``,
