@@ -38,7 +38,7 @@ Dokumen ini adalah pedoman arsitektur dan standar rekayasa software untuk bot **
    - **`app/services/bot/` (Bot Engine & Utilities):** Message parser (`parseMessage`), command validator, command registry dengan instant $O(1)$ dispatching, built-in guards (`sender`, `bot`, `group`, `private`), dan formatter menu.
    - **`app/events/message/index.js` (Message Gateway):** Menerima event native `message`, memfilter stub/broadcast, menyiapkan `ctx.msg`, menjalankan middleware event, lalu mendispatch ke command registry.
    - **`app/events/<eventName>/*.js` (Custom Events):** Handler event aplikasi untuk event WhatsApp lainnya (misal sinkronisasi grup).
-   - **`app/middlewares/*.js` (App Middlewares):** Middleware logika bisnis spesifik userland (contoh: `bot-table.js`, `group.js` untuk scoring & bot access).
+   - **`app/middlewares/*.js` (App Middlewares):** Middleware logika bisnis spesifik userland (contoh: `bot-table.js`, `group.js`, `group-mode.js`, `group-score.js`).
    - **`app/commands/<category>/*.js` (Commands):** Logika bisnis murni command bot.
 2. **Type Safety & Context Extensibility:**
    - Seluruh payload memiliki tipe yang kuat dan scoped.
@@ -62,7 +62,9 @@ nakiri/
 │   ├── middlewares/              # Userland middlewares
 │   │   ├── bot-table.js          # Inject ctx.tableBot from database/cache
 │   │   ├── bot-ignore.js         # Filter stubs, broadcasts, & parse ctx.msg
-│   │   ├── group.js              # Group metadata, scoring, & ctx.tableGroup, ctx.tableGroupMember
+│   │   ├── group.js              # Group & member records (ctx.tableGroup, ctx.tableGroupMember)
+│   │   ├── group-mode.js         # Group botAccess policy guard ('everyone' vs 'admin')
+│   │   ├── group-score.js        # Debounced group member interaction scoring
 │   │   └── bot-guards.js         # Command guards (sender, bot, group, private)
 │   ├── events/                   # Dedicated Native Event Subdirectories
 │   │   ├── message/
@@ -114,6 +116,8 @@ export const eventMiddlewares = {
     () => import('#app/middlewares/bot-table.js'),
     () => import('#app/middlewares/bot-ignore.js'),
     () => import('#app/middlewares/group.js'),
+    () => import('#app/middlewares/group-mode.js'),
+    () => import('#app/middlewares/group-score.js'),
   ],
 }
 

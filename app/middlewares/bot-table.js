@@ -1,74 +1,49 @@
 import cache from '@nakiri/core/services/cache';
 import db from '@nakiri/core/services/database';
 
-const botCache = cache.namespace('bot:settings');
-
 /**
- * Clear the in-memory bot table cache to force a fresh database read.
+ * Clear the in-memory bot table cache.
  */
 export function clearTableBotCache() {
-  botCache.clear();
+  cache.delete('table_bot');
 }
 
 /**
- * Fetch bot configuration from the database with standardized caching.
- * Dynamically passes through all columns from the 'bots' table without hardcoded schemas.
+ * Fetch bot configuration from the database with caching.
  *
- * @returns {Promise<Record<string, any>>}
+ * @returns {Promise<Record<string, any> | null>}
  */
 export async function getTableBot() {
-  return botCache.remember('current', 30_000, async () => {
-    try {
-      const row = await db('bots').first();
+  return cache.remember('table_bot', '15m', async () => {
+    const bot = await db('bots').first();
+    if (!bot) return null;
 
-      if (!row) {
-        return {};
+    for (const key of ['owners', 'prefixes', 'shortcuts']) {
+      if (typeof bot[key] === 'string') {
+        try {
+          bot[key] = JSON.parse(bot[key]);
+        } catch {}
       }
-
-      // Dynamically preserve all table columns
-      const record = { ...row };
-
-      // Automatically parse any stringified JSON columns
-      for (const [key, value] of Object.entries(record)) {
-        if (
-          typeof value === 'string' &&
-          (value.startsWith('[') || value.startsWith('{'))
-        ) {
-          try {
-            record[key] = JSON.parse(value);
-          } catch {}
-        }
-      }
-
-      // Pre-compute normalized owner set if owners field exists
-      if (Array.isArray(record.owners)) {
-        const ownerSet = new Set();
-        for (const o of record.owners) {
-          if (!o) continue;
-          const s = String(o).trim();
-          ownerSet.add(s);
-          const digits = s.replace(/[^0-9]/g, '');
-          if (digits.length >= 7) {
-            ownerSet.add(digits);
-          }
-        }
-        record._ownerSet = ownerSet;
-      }
-
-      return record;
-    } catch {
-      return {};
     }
+
+    return bot;
   });
 }
 
 /**
  * Bot database table loader middleware.
- * Attaches the bot record (tableBot) to ctx.
+ * Injects ctx.tableBot.
  *
  * @type {import('@nakiri/core/services/modules').EventMiddleware<'message'>}
  */
 export default async function botTableMiddleware(payload, ctx) {
   const tableBot = await getTableBot();
+  if (tableBot) {
+    Object.defineProperty(tableBot, 'clearCache', {
+      value: clearTableBotCache,
+      enumerable: false,
+      configurable: true,
+    });
+  }
   ctx.tableBot = tableBot;
 }

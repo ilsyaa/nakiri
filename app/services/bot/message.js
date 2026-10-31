@@ -42,26 +42,6 @@ export function checkIsOwner(
   if (fromMe) return true;
   if (!sender) return false;
 
-  const ownerSet = botSettingsOrOwners?._ownerSet;
-  if (ownerSet instanceof Set && ownerSet.size > 0) {
-    if (sender.id && ownerSet.has(sender.id)) return true;
-    if (sender.pn && ownerSet.has(sender.pn)) return true;
-    if (sender.lid && ownerSet.has(sender.lid)) return true;
-
-    const pnDigits = sender.pn
-      ? sender.pn.split('@')[0].replace(/[^0-9]/g, '')
-      : null;
-    if (pnDigits && ownerSet.has(pnDigits)) return true;
-
-    const lidDigits = sender.lid
-      ? sender.lid.split('@')[0].replace(/[^0-9]/g, '')
-      : null;
-    if (lidDigits && ownerSet.has(lidDigits)) return true;
-
-    return false;
-  }
-
-  // Fallback for array of owners
   const owners = Array.isArray(botSettingsOrOwners)
     ? botSettingsOrOwners
     : botSettingsOrOwners?.owners;

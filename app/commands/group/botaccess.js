@@ -1,5 +1,4 @@
 import { defineCommand } from '#app/services/bot/index.js';
-import cache from '@nakiri/core/services/cache';
 import db from '@nakiri/core/services/database';
 
 export default defineCommand({
@@ -47,7 +46,7 @@ export default defineCommand({
         settings: JSON.stringify(updatedSettings),
       });
 
-    cache.delete(`table_group:${msg.chat}`);
+    tableGroup?.clearCache?.();
 
     if (tableGroup) {
       tableGroup.settings = updatedSettings;
