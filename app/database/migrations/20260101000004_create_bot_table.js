@@ -9,6 +9,7 @@ export async function up(knex) {
       table.increments('id').primary();
       table.json('owners').nullable();
       table.json('prefixes').nullable();
+      table.json('shortcuts').nullable();
       table.boolean('self').defaultTo(false);
     });
   }
