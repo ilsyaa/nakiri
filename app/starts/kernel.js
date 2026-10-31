@@ -7,8 +7,8 @@
  */
 export const eventMiddlewares = {
   message: [
+    () => import('#app/middlewares/bot-table.js'),
     () => import('#app/middlewares/bot-ignore.js'),
-    () => import('#app/middlewares/reaction-shortcut.js'),
     () => import('#app/middlewares/group.js'),
   ],
 };

@@ -23,10 +23,9 @@ function formatUptime(seconds) {
 
 export default defineCommand({
   name: 'ping',
-  aliases: ['speed'],
+  aliases: ['ping'],
   category: 'utility',
   description: 'Check bot responsiveness and server specifications',
-  prefix: 'optional',
 
   async execute(payload, ctx) {
     const msg = ctx.msg;

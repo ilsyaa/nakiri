@@ -15,14 +15,19 @@ declare module '@nakiri/core/services/modules' {
     msg?: ParsedMessage
 
     /**
-     * Group database record and settings (injected by group_score middleware)
+     * Bot database record and configuration (injected by bot-table middleware)
+     */
+    tableBot?: any
+
+    /**
+     * Group database record and settings (injected by group middleware)
      */
     tableGroup?: any
 
     /**
-     * Group member database record (injected by group_score middleware)
+     * Group member database record (injected by group middleware)
      */
-    tableMember?: any
+    tableGroupMember?: any
   }
 }
 
@@ -34,6 +39,11 @@ declare module '#app/services/bot/types.js' {
     msg: ParsedMessage
 
     /**
+     * Bot database record and configuration
+     */
+    tableBot?: any
+
+    /**
      * Group database record and settings
      */
     tableGroup?: any
@@ -41,6 +51,6 @@ declare module '#app/services/bot/types.js' {
     /**
      * Group member database record
      */
-    tableMember?: any
+    tableGroupMember?: any
   }
 }

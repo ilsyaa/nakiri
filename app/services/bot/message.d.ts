@@ -135,16 +135,6 @@ export interface BotSettings {
 }
 
 /**
- * Fetch bot configuration from the database with in-memory caching and request coalescing
- */
-export function getBotSettings(): Promise<BotSettings>
-
-/**
- * Clear the in-memory bot settings cache to force a fresh database read
- */
-export function clearBotSettingsCache(): void
-
-/**
  * Fetch group metadata with standardized caching (15 minutes TTL)
  */
 export function getGroupMetadata(
@@ -164,7 +154,11 @@ export function clearGroupMetadataCache(groupJid?: string): void
  * @param payload Native Zapo message payload
  * @param client Optional Zapo client instance to resolve bot credentials
  */
-export function parseMessage(payload: any, client?: any): Promise<ParsedMessage>
+export function parseMessage(
+  payload: any,
+  client?: any,
+  botSettings?: any,
+): Promise<ParsedMessage>
 
 /**
  * Convenient alias for parseMessage
@@ -215,8 +209,6 @@ export { isCommand, validateCommand } from './command.js'
 declare const _default: {
   parseMessage: typeof parseMessage
   serialize: typeof parseMessage
-  getBotSettings: typeof getBotSettings
-  clearBotSettingsCache: typeof clearBotSettingsCache
   getGroupMetadata: typeof getGroupMetadata
   clearGroupMetadataCache: typeof clearGroupMetadataCache
   send: typeof send

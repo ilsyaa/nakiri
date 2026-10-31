@@ -2,7 +2,7 @@ import { defineCommand, formatMenuText } from '#app/services/bot/index.js';
 
 export default defineCommand({
   name: 'menu',
-  aliases: ['help'],
+  aliases: ['menu', 'help'],
   category: 'utility',
   description: 'Display bot menu and available commands',
 

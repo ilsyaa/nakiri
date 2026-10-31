@@ -23,9 +23,11 @@ Dokumen ini adalah pedoman arsitektur dan standar rekayasa software untuk bot **
 >    - Validasi hak akses **WAJIB** menggunakan parameterized middlewares di properti `middlewares: [...]` (contoh: `['group', 'sender:admin,superAdmin,isOwner', 'bot:admin']`).
 > 6. **Pesan Penolakan Ringkas (Concise Guard Messages):**
 >    - Jika terjadi kegagalan validasi hak akses, gunakan pesan penolakan yang ultra-ringkas dan to-the-point (`Only Owner!`, `Only Admin!`, `Only in Group!`, `Bot is not Admin!`). Jangan membanjiri chat WhatsApp dengan pesan penolakan yang panjang dan bertele-tele.
-> 7. **DILARANG Auto-Commit Git (No Automated Git Commits):**
->    - AI Agent **DILARANG KERAS** menjalankan perintah `git commit` atau membuat commit secara otomatis. Biarkan developer yang melakukan commit sendiri (*"biar dev-nya aja yang commit"*).
->    - AI Agent hanya diperbolehkan memberikan rekomendasi pesan commit (*suggested Conventional Commit message*) di akhir respons untuk direview dan dieksekusi secara manual oleh developer.
+> 7. **DILARANG Auto-Commit Git & DILARANG Suggestion Commit Otomatis:**
+>    - AI Agent **DILARANG KERAS** menjalankan perintah `git commit` atau membuat commit secara otomatis (_"biar dev-nya aja yang commit"_).
+>    - AI Agent juga **DILARANG** menyertakan rekomendasi/suggestion pesan commit (_suggested Conventional Commit message_) di akhir respons kecuali jika diminta secara eksplisit oleh developer.
+> 8. **DILARANG Menambahkan Inisiatif Alias / Bloat Tanpa Izin:**
+>    - Jangan pernah berinisiatif membuat alias (fungsi, variabel, atau properti seperti `tableMember`, `getBotSettings`, dll) demi backward compatibility tanpa meminta pendapat/persetujuan developer terlebih dahulu. Buat perubahan langsung, bersih, dan tanpa redundansi untuk menjaga kode tidak gemuk (_no bloat_) dan mudah dimaintain.
 
 ---
 
@@ -36,11 +38,11 @@ Dokumen ini adalah pedoman arsitektur dan standar rekayasa software untuk bot **
    - **`app/services/bot/` (Bot Engine & Utilities):** Message parser (`parseMessage`), command validator, command registry dengan instant $O(1)$ dispatching, built-in guards (`sender`, `bot`, `group`, `private`), dan formatter menu.
    - **`app/events/message/index.js` (Message Gateway):** Menerima event native `message`, memfilter stub/broadcast, menyiapkan `ctx.msg`, menjalankan middleware event, lalu mendispatch ke command registry.
    - **`app/events/<eventName>/*.js` (Custom Events):** Handler event aplikasi untuk event WhatsApp lainnya (misal sinkronisasi grup).
-   - **`app/middlewares/*.js` (App Middlewares):** Middleware logika bisnis spesifik userland (contoh: `group_score.js` untuk scoring & bot access).
+   - **`app/middlewares/*.js` (App Middlewares):** Middleware logika bisnis spesifik userland (contoh: `bot-table.js`, `group.js` untuk scoring & bot access).
    - **`app/commands/<category>/*.js` (Commands):** Logika bisnis murni command bot.
 2. **Type Safety & Context Extensibility:**
    - Seluruh payload memiliki tipe yang kuat dan scoped.
-   - Properti custom pada `ctx` (seperti `ctx.msg`, `ctx.tableGroup`, `ctx.tableMember`) didefinisikan di `app/types/context.d.ts` menggunakan TypeScript module augmentation.
+   - Properti custom pada `ctx` (seperti `ctx.msg`, `ctx.tableBot`, `ctx.tableGroup`, `ctx.tableGroupMember`) didefinisikan di `app/types/context.d.ts` menggunakan TypeScript module augmentation.
 
 ---
 
@@ -53,14 +55,15 @@ nakiri/
 │   └── utils/                    # Pure helpers (logger, path, storage, common, dll)
 ├── app/                          # Userland Application Logic
 │   ├── types/                    # Userland Context Augmentation
-│   │   └── context.d.ts          # ctx.msg, ctx.tableGroup, ctx.tableMember, dll
+│   │   └── context.d.ts          # ctx.msg, ctx.tableBot, ctx.tableGroup, ctx.tableGroupMember
 │   ├── starts/                   # Application startup lifecycle
 │   │   ├── index.js              # AdonisJS-style application hooks (app.use, app.server, app.terminal)
 │   │   └── kernel.js             # Userland event middlewares & custom command middleware aliases
 │   ├── middlewares/              # Userland middlewares
-│   │   ├── ignore.js             # Filter stubs, broadcasts, & parse ctx.msg
-│   │   ├── group_score.js        # Group metadata caching, member scoring, & botAccess
-│   │   └── guards.js             # Command guards (sender, bot, group, private)
+│   │   ├── bot-table.js          # Inject ctx.tableBot from database/cache
+│   │   ├── bot-ignore.js         # Filter stubs, broadcasts, & parse ctx.msg
+│   │   ├── group.js              # Group metadata, scoring, & ctx.tableGroup, ctx.tableGroupMember
+│   │   └── bot-guards.js         # Command guards (sender, bot, group, private)
 │   ├── events/                   # Dedicated Native Event Subdirectories
 │   │   ├── message/
 │   │   │   └── commands.js       # WhatsApp message command dispatcher
@@ -108,21 +111,23 @@ Userland middleware didaftarkan secara deklaratif di `app/starts/kernel.js`:
 // app/starts/kernel.js
 export const eventMiddlewares = {
   message: [
-    () => import('#app/middlewares/ignore.js'),
-    () => import('#app/middlewares/group_score.js'),
+    () => import('#app/middlewares/bot-table.js'),
+    () => import('#app/middlewares/bot-ignore.js'),
+    () => import('#app/middlewares/group.js'),
   ],
 }
 
 /**
- * Command middleware aliases mapped to app/middlewares/guards.js
+ * Command middleware aliases mapped to app/middlewares/bot-guards.js
  */
 export const middlewareAliases = {
-  sender: () => import('#app/middlewares/guards.js').then((m) => m.senderGuard),
-  bot: () => import('#app/middlewares/guards.js').then((m) => m.botGuard),
+  sender: () =>
+    import('#app/middlewares/bot-guards.js').then((m) => m.senderGuard),
+  bot: () => import('#app/middlewares/bot-guards.js').then((m) => m.botGuard),
   group: () =>
-    import('#app/middlewares/guards.js').then((m) => m.groupOnlyGuard),
+    import('#app/middlewares/bot-guards.js').then((m) => m.groupOnlyGuard),
   private: () =>
-    import('#app/middlewares/guards.js').then((m) => m.privateOnlyGuard),
+    import('#app/middlewares/bot-guards.js').then((m) => m.privateOnlyGuard),
 }
 ```
 

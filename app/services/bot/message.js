@@ -6,10 +6,10 @@ import {
   downloadMediaMessage,
   resolveMediaPayload,
 } from 'zapo-js';
-import db from '@nakiri/core/services/database';
 import cache from '@nakiri/core/services/cache';
 import { extractText, extractMentions } from '@nakiri/core/utils/message';
 import { isCommand, validateCommand } from './command.js';
+import { getTableBot } from '#app/middlewares/bot-table.js';
 
 /**
  * Safely parse a JID to a user-level JID without device suffix
@@ -25,66 +25,7 @@ export function safeUserJid(jid) {
   }
 }
 
-const botCache = cache.namespace('bot:settings');
 const groupCache = cache.namespace('group:metadata');
-
-/**
- * Clear the in-memory bot settings cache to force a fresh database read
- */
-export function clearBotSettingsCache() {
-  botCache.clear();
-}
-
-/**
- * Fetch bot configuration from the database with standardized caching and request coalescing.
- * Dynamically passes through all columns from the 'bots' table without hardcoded schemas.
- * @returns {Promise<Record<string, any>>}
- */
-export async function getBotSettings() {
-  return botCache.remember('current', 30_000, async () => {
-    try {
-      const row = await db('bots').first();
-
-      if (!row) {
-        return {};
-      }
-
-      // Dynamically preserve all table columns
-      const record = { ...row };
-
-      // Automatically parse any stringified JSON columns
-      for (const [key, value] of Object.entries(record)) {
-        if (
-          typeof value === 'string' &&
-          (value.startsWith('[') || value.startsWith('{'))
-        ) {
-          try {
-            record[key] = JSON.parse(value);
-          } catch {}
-        }
-      }
-
-      // Pre-compute normalized owner set if owners field exists
-      if (Array.isArray(record.owners)) {
-        const ownerSet = new Set();
-        for (const o of record.owners) {
-          if (!o) continue;
-          const s = String(o).trim();
-          ownerSet.add(s);
-          const digits = s.replace(/[^0-9]/g, '');
-          if (digits.length >= 7) {
-            ownerSet.add(digits);
-          }
-        }
-        record._ownerSet = ownerSet;
-      }
-
-      return record;
-    } catch {
-      return {};
-    }
-  });
-}
 
 /**
  * Check if the sender is an authorized bot owner
@@ -93,7 +34,11 @@ export async function getBotSettings() {
  * @param {boolean} [fromMe]
  * @returns {boolean}
  */
-export function checkIsOwner(sender, botSettingsOrOwners = null, fromMe = false) {
+export function checkIsOwner(
+  sender,
+  botSettingsOrOwners = null,
+  fromMe = false
+) {
   if (fromMe) return true;
   if (!sender) return false;
 
@@ -445,15 +390,15 @@ function parseQuotedMessage(contextInfo, bot, botSettings = null) {
  * @param {any} [client] - Zapo client instance (optional, for resolving bot identity)
  * @returns {Promise<import('./message.js').ParsedMessage>}
  */
-export async function parseMessage(payload, client = null) {
-  const botSettings = await getBotSettings();
+export async function parseMessage(payload, client = null, botSettings = null) {
+  if (!botSettings) {
+    botSettings = await getTableBot();
+  }
 
   const key = payload?.key || {};
   const fromMe = Boolean(key.fromMe);
   const isGroup = Boolean(
-    key.isGroup !== undefined
-      ? key.isGroup
-      : key.remoteJid?.endsWith('@g.us')
+    key.isGroup !== undefined ? key.isGroup : key.remoteJid?.endsWith('@g.us')
   );
   const isBroadcast = Boolean(
     key.isBroadcast !== undefined
@@ -1030,8 +975,6 @@ export { isCommand, validateCommand };
 export default {
   parseMessage,
   serialize,
-  getBotSettings,
-  clearBotSettingsCache,
   getGroupMetadata,
   clearGroupMetadataCache,
   send,

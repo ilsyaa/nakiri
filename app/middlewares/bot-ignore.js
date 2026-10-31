@@ -33,11 +33,10 @@ export default async function ignoreMiddleware(payload, ctx) {
     return ctx.stop();
   }
 
-  const parsed = await parseMessage(payload, ctx.client);
+  const parsed = await parseMessage(payload, ctx.client, ctx.tableBot);
   if (!parsed) {
     return ctx.stop();
   }
 
   ctx.msg = parsed;
 }
-

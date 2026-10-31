@@ -113,7 +113,7 @@ export default async function groupMiddleware(payload, ctx) {
       }
     }
 
-    ctx.tableMember = member;
+    ctx.tableGroupMember = member;
 
     // 3. Debounced interaction score counter
     if (!msg.flags.fromMe && member?.id) {

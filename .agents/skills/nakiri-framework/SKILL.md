@@ -50,8 +50,11 @@ Nakiri Architecture v2 separates concerns into clean, decoupled layers:
    - Never create or edit files in `core/` unless explicitly instructed by the user. All userland logic belongs strictly in `app/`.
 5. **Concise Guard Rejections**:
    - Access control rejections must be ultra-concise: `'Only Owner!'`, `'Only Admin!'`, `'Only in Group!'`, `'Bot is not Admin!'`.
-6. **No Automated Git Commits**:
-   - AI agents are **STRICTLY FORBIDDEN** from executing `git commit` or committing changes automatically. Always leave committing to the human developer. Agents may only provide a suggested Conventional Commit message for the developer to execute manually.
+6. **No Automated Git Commits & No Commit Suggestions**:
+   - AI agents are **STRICTLY FORBIDDEN** from executing `git commit` or committing changes automatically.
+   - AI agents are also **FORBIDDEN** from appending commit suggestions (_suggested Conventional Commit messages_) at the end of responses unless explicitly requested by the developer.
+7. **No Unapproved Aliases or Compatibility Bloat**:
+   - Never add backward-compatibility aliases (functions, variables, or properties like `tableMember`, `getBotSettings`) without asking and receiving approval from the developer first. Keep the codebase clean, lean, and maintainable.
 
 ---
 
@@ -61,8 +64,8 @@ Create a new file in `app/commands/<category>/<name>.js`:
 
 ```javascript
 // app/commands/utility/ping.js
-import os from 'os';
-import { defineCommand } from '@nakiri/core/services/commands';
+import os from 'os'
+import { defineCommand } from '@nakiri/core/services/commands'
 
 export default defineCommand({
   name: 'ping',
@@ -75,10 +78,10 @@ export default defineCommand({
   middlewares: [],
 
   async execute(payload, ctx) {
-    const { msg } = ctx;
-    await msg.reply('Pong!');
+    const { msg } = ctx
+    await msg.reply('Pong!')
   },
-});
+})
 ```
 
 ### Parameterized Middleware Guards
@@ -94,6 +97,7 @@ Use string notation in the `middlewares` array:
 - **`'bot:<roles>'`**: Requires bot to have the specified role (e.g. `'bot:admin'`).
 
 Example with multiple guards:
+
 ```javascript
 // app/commands/group/kick.js
 export default defineCommand({
@@ -103,10 +107,10 @@ export default defineCommand({
   middlewares: ['group', 'sender:admin,superAdmin', 'bot:admin'],
 
   async execute(payload, ctx) {
-    const { client, msg } = ctx;
+    const { client, msg } = ctx
     // Execution is guaranteed to have passed all guards!
   },
-});
+})
 ```
 
 ---
@@ -121,24 +125,26 @@ Create a handler in `app/middlewares/<name>.js`:
  * @type {import('@nakiri/core/services/commands').CommandMiddlewareHandler}
  */
 export default async function vipOnlyMiddleware(payload, ctx, args = []) {
-  const isVip = ctx.tableMember?.is_vip;
+  const isVip = ctx.tableGroupMember?.is_vip
   if (!isVip) {
-    await ctx.msg.reply('Only VIP Members!');
-    return false; // Return false or call ctx.stop() to abort command execution
+    await ctx.msg.reply('Only VIP Members!')
+    return false // Return false or call ctx.stop() to abort command execution
   }
-  return true;
+  return true
 }
 ```
 
 Register the alias in `app/starts/kernel.js`:
+
 ```javascript
 export const middlewareAliases = {
   // ...
   vip: () => import('#app/middlewares/vip_only.js'),
-};
+}
 ```
 
 Now any command can use it:
+
 ```javascript
 middlewares: ['vip']
 ```
@@ -151,8 +157,8 @@ Events are organized into subdirectories per WhatsApp event channel (`app/events
 
 ```javascript
 // app/events/call/index.js
-import { defineModule } from '@nakiri/core/services/modules';
-import { runEventMiddlewares } from '#app/starts/kernel.js';
+import { defineModule } from '@nakiri/core/services/modules'
+import { runEventMiddlewares } from '#app/starts/kernel.js'
 
 export default defineModule({
   name: 'call-gateway',
@@ -162,19 +168,18 @@ export default defineModule({
   description: 'Native WhatsApp call event handler',
 
   async execute(payload, ctx) {
-    await runEventMiddlewares('call', payload, ctx);
+    await runEventMiddlewares('call', payload, ctx)
   },
-});
+})
 ```
 
 Add any scoped middlewares for `call` in `app/starts/kernel.js`:
+
 ```javascript
 export const eventMiddlewares = {
   // ...
-  call: [
-    () => import('#app/middlewares/reject_call.js'),
-  ],
-};
+  call: [() => import('#app/middlewares/reject_call.js')],
+}
 ```
 
 ---
@@ -186,12 +191,12 @@ To inject custom properties into `ctx` (e.g. `ctx.session`, `ctx.vipData`), edit
 ```typescript
 // app/types/context.d.ts
 export interface CustomContextData {
-  tableGroup?: any;
-  tableMember?: any;
-  vipData?: { tier: number }; // Added custom property
-  [key: string]: any;
+  tableBot?: any
+  tableGroup?: any
+  tableGroupMember?: any
+  vipData?: { tier: number } // Added custom property
+  [key: string]: any
 }
 ```
 
 TypeScript and IDE Language Servers will immediately provide full type autocompletion across all event handlers, middlewares, and commands.
-
