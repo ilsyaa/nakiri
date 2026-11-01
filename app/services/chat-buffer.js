@@ -1,10 +1,10 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import db from '@nakiri/core/services/database';
 import logger from '@nakiri/core/utils/logger';
+import { dirTemp } from '@nakiri/core/utils/path';
 import { DateTime } from 'luxon';
 
-const WAL_FILE = path.resolve('storage/temp/chat_buffer.wal');
+const WAL_FILE = dirTemp('chat_buffer.wal');
 const FLUSH_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 const MAX_BUFFER_COUNT = 30; // Auto-flush when group buffer reaches 30 messages
 
