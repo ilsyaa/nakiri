@@ -1,4 +1,5 @@
 import type { ParsedMessage } from '#app/services/bot/message.js'
+import type { CommandDefinition } from '#app/services/bot/types.js'
 
 /**
  * Userland Context Augmentation
@@ -13,6 +14,11 @@ declare module '@nakiri/core/services/modules' {
      * Normalized parsed message object (injected by message gateway)
      */
     msg?: ParsedMessage
+
+    /**
+     * Matched active command definition if triggered (injected by bot-ignore middleware)
+     */
+    command?: CommandDefinition
 
     /**
      * Bot database record and configuration (injected by bot-table middleware)

@@ -6,6 +6,6 @@ export default defineCommand({
   description: 'test',
 
   async execute(payload, ctx) {
-    console.log(ctx.tableBot, ctx.tableGroup, ctx.tableGroupMember);
+    console.log(ctx);
   },
 });

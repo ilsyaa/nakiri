@@ -122,7 +122,15 @@ export class CommandRegistry {
           if (Array.isArray(def.aliases)) {
             for (const alias of def.aliases) {
               if (typeof alias === 'string' && alias.trim()) {
-                this.commandsMap.set(alias.trim().toLowerCase(), def);
+                const normalizedAlias = alias.trim().toLowerCase();
+                const existing = this.commandsMap.get(normalizedAlias);
+                if (existing && existing !== def) {
+                  logger.warn(
+                    '[REGISTRY]',
+                    `Duplicate alias "${normalizedAlias}" detected in command "${def.name}", overwriting previous definition from "${existing.name}".`
+                  );
+                }
+                this.commandsMap.set(normalizedAlias, def);
               }
             }
           }
