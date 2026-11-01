@@ -117,12 +117,12 @@ export async function formatMenuText({
 
   const header = [
     `*NAKIRI BOT MENU*`,
-    `Halo, *${userName}*! 👋`,
+    `Halo, *${userName}*!`,
     '',
     `Prefix: \`${cleanPrefix || 'None'}\` | Total: *${totalCommands}* fitur`,
   ].join('\n');
 
-  const footer = `💡 _Ketik \`${cleanPrefix}menu <grup>\` untuk melihat menu spesifik._`;
+  const footer = `_Ketik \`${cleanPrefix}menu <grup>\` untuk melihat menu spesifik._`;
 
   return [header, '', sections.join('\n\n'), '', footer].join('\n');
 }

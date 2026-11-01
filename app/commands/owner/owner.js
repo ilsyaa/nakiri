@@ -96,12 +96,30 @@ export default defineCommand({
     const { client, msg, tableBot } = ctx;
     if (!msg) return;
 
-    const [subcommand, ...rest] = msg.body?.args || [];
+    const [subcommandRaw, ...rest] = msg.body?.args || [];
+    const subcommand = (subcommandRaw || '').toLowerCase();
     const targetInput = rest.join(' ').trim();
     const prefix = msg.body?.prefix || '.';
     const owners = Array.isArray(tableBot?.owners)
       ? tableBot.owners.map(cleanDigits)
       : [];
+
+    // Panduan jika tanpa argumen atau subcommand tidak dikenali
+    const sendGuide = () =>
+      msg.reply(
+        [
+          '｢ *owner management* ｣',
+          `• \`${prefix}owner list\``,
+          `• \`${prefix}owner set <target>\``,
+          `• \`${prefix}owner del <target/nomor>\``,
+          '',
+          `_Gunakan \`${prefix}owner <command>\` untuk menjalankan._`,
+        ].join('\n')
+      );
+
+    if (!subcommand) {
+      return sendGuide();
+    }
 
     // 1. LIST
     if (subcommand === 'list') {
@@ -109,11 +127,16 @@ export default defineCommand({
       const list = owners
         .map(
           (/** @type {any} */ o, /** @type {number} */ i) =>
-            `${i + 1}. \`${o}\``
+            `• [${i + 1}] \`${o}\``
         )
         .join('\n');
       return msg.reply(
-        `👑 *DAFTAR BOT OWNER*\nTotal: *${owners.length}*\n\n${list}`
+        [
+          '｢ *daftar bot owner* ｣',
+          `Total: *${owners.length}* owner`,
+          '',
+          list,
+        ].join('\n')
       );
     }
 
@@ -136,7 +159,12 @@ export default defineCommand({
 
       const details = toAdd.map((t) => `• \`${t}\``).join('\n');
       return msg.reply(
-        `✅ *Owner berhasil ditambahkan:*\n${details}\n\nTotal: *${newOwners.length}* owner.`
+        [
+          '*Owner berhasil ditambahkan:*',
+          details,
+          '',
+          `Total: *${newOwners.length}* owner`,
+        ].join('\n')
       );
     }
 
@@ -176,13 +204,15 @@ export default defineCommand({
       tableBot?.clearCache?.();
 
       return msg.reply(
-        `🗑️ *Owner berhasil dihapus:*\n${toDel.map((t) => `• \`${t}\``).join('\n')}\n\nSisa: *${newOwners.length}* owner.`
+        [
+          '*Owner berhasil dihapus:*',
+          toDel.map((t) => `• \`${t}\``).join('\n'),
+          '',
+          `Total: *${newOwners.length}* owner`,
+        ].join('\n')
       );
     }
 
-    // Help
-    return msg.reply(
-      `👑 *PANDUAN OWNER*\n\n• \`${prefix}owner list\`\n• \`${prefix}owner set <target>\`\n• \`${prefix}owner del <target/index>\``
-    );
+    return sendGuide();
   },
 });

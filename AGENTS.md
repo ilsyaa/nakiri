@@ -28,6 +28,13 @@ Dokumen ini adalah pedoman arsitektur dan standar rekayasa software untuk bot **
 >    - AI Agent juga **DILARANG** menyertakan rekomendasi/suggestion pesan commit (_suggested Conventional Commit message_) di akhir respons kecuali jika diminta secara eksplisit oleh developer.
 > 8. **DILARANG Menambahkan Inisiatif Alias / Bloat Tanpa Izin:**
 >    - Jangan pernah berinisiatif membuat alias (fungsi, variabel, atau properti seperti `tableMember`, `getBotSettings`, dll) demi backward compatibility tanpa meminta pendapat/persetujuan developer terlebih dahulu. Buat perubahan langsung, bersih, dan tanpa redundansi untuk menjaga kode tidak gemuk (_no bloat_) dan mudah dimaintain.
+> 9. **DILARANG Menggunakan Emoji Slop & Standar Format Pesan Bersih (No Emoji Slop):**
+>    - **DILARANG KERAS** menggunakan emoji berlebihan atau emoji hiasan murahan/slop (contoh: ⚙️, 👑, ✅, 🗑️, 💡, 👋, 🚀, dll) dalam respon chat WhatsApp bot.
+>    - Format output WhatsApp **WAJIB** rapi, minimalis, dan elegan menyerupai format `menu.js`:
+>      - Gunakan header bracket `｢ *title* ｣` atau `*TITLE*`.
+>      - Gunakan bullet point simpel `• \`item\`` untuk daftar.
+>      - Gunakan monospace backticks untuk perintah atau parameter (`\`prefix add <simbol>\``).
+>      - Hindari dekorasi simbol berulang-ulang yang mengotori layar pengguna.
 
 ---
 
