@@ -5,6 +5,7 @@ import {
   AI_CONFIG,
   buildChatPayload,
   appendChatHistory,
+  sanitizeAiResponse,
 } from '#app/services/ai/persona.js';
 
 /**
@@ -82,22 +83,6 @@ export default async function botAiChatMiddleware(payload, ctx) {
     const captionContext = cleanedText
       ? ` dengan caption "${cleanedText}"`
       : '';
-    cleanedText = `[mengirim ${mediaType}${captionContext}]`;
-  }
-
-  // If user sent a media file without text or with caption
-  if (isMediaMsg) {
-    const mediaType = msg.flags?.isImage
-      ? 'foto/gambar'
-      : msg.flags?.isVideo
-      ? 'video'
-      : msg.flags?.isAudio
-      ? 'voice note/audio'
-      : msg.flags?.isDocument
-      ? 'dokumen/file'
-      : 'media/file';
-
-    const captionContext = cleanedText ? ` dengan caption "${cleanedText}"` : '';
     cleanedText = `[mengirim ${mediaType}${captionContext}]`;
   }
 
@@ -183,16 +168,23 @@ export default async function botAiChatMiddleware(payload, ctx) {
     } catch {}
 
     if (replyContent) {
+      const finalReply = sanitizeAiResponse(replyContent);
+
       // Save interaction to memory
       const userEntry = isGroup
         ? `[${senderName}]: ${cleanedText}`
         : cleanedText;
 
       await appendChatHistory(msg.chat, 'user', userEntry);
-      await appendChatHistory(msg.chat, 'assistant', replyContent);
+      await appendChatHistory(msg.chat, 'assistant', finalReply);
 
       // Reply back to WhatsApp
-      await msg.reply(replyContent);
+      await msg.reply(finalReply);
+
+      // Stop event propagation so commands/further handlers do not trigger
+      if (typeof ctx.stop === 'function') {
+        ctx.stop();
+      }
     }
   } catch (err) {
     // Clean up typing on error
