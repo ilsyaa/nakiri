@@ -1,6 +1,5 @@
 import { defineCommand } from '#app/services/bot/index.js';
 import db from '@nakiri/core/services/database';
-import { getTableGroupMember } from '#app/middlewares/group-table.js';
 import { resolveTarget } from '#app/utils/target.js';
 
 /**
@@ -27,6 +26,23 @@ const formatDate = (val) => {
   }
 };
 
+/**
+ * Query data member langsung dari database berdasarkan target
+ */
+async function findGroupMember(groupId, { lid, pn }) {
+  if (!groupId || (!lid && !pn)) return null;
+
+  return db('group_members')
+    .where('group_id', groupId)
+    .where((qb) => {
+      const candidates = [];
+      if (lid) candidates.push(lid, `${lid}@lid`);
+      if (pn) candidates.push(pn, `${pn}@s.whatsapp.net`);
+      qb.whereIn('user_lid', candidates).orWhereIn('user_pn', candidates);
+    })
+    .first();
+}
+
 export default defineCommand({
   name: 'user',
   aliases: ['user', 'member'],
@@ -36,7 +52,7 @@ export default defineCommand({
   middlewares: ['group'],
 
   async execute(payload, ctx) {
-    const { msg, tableGroup } = ctx;
+    const { msg, tableGroup, tableGroupMember } = ctx;
     if (!msg || !tableGroup) return;
 
     const p = msg.body?.prefix || '.';
@@ -83,9 +99,12 @@ export default defineCommand({
         );
       }
 
-      const member = await getTableGroupMember(tableGroup.id, targetIdentities);
+      const member = await findGroupMember(tableGroup.id, targetIdentities);
+
       if (!member) {
-        return msg.reply('Member tidak ditemukan dalam database grup.');
+        return msg.reply(
+          'Member belum pernah berinteraksi di grup ini (tidak ada di database).'
+        );
       }
 
       const fieldConfig = ALLOWED_EDIT_FIELDS[field];
@@ -117,7 +136,6 @@ export default defineCommand({
           return msg.reply(`Nilai untuk \`${field}\` harus berupa angka.`);
         }
 
-        // Support operator + dan - (contoh: +50 atau -20)
         if (value.startsWith('+') || value.startsWith('-')) {
           num = (member[dbColumn] || 0) + num;
         }
@@ -132,13 +150,11 @@ export default defineCommand({
         }
         finalValueDisplay = String(num);
       } else {
-        // Type: string
         updates[dbColumn] = value;
         finalValueDisplay = value;
       }
 
       await db('group_members').where({ id: member.id }).update(updates);
-      member.clearCache?.();
 
       const targetIdentifier = member.user_pn || member.user_lid || member.id;
       return msg.reply(
@@ -154,18 +170,29 @@ export default defineCommand({
     // ==========================================
     // 2. TAMPILKAN INFORMASI MEMBER (Default)
     // ==========================================
-    const targetInput = subcommand !== 'help' ? args[0] : '';
-    const targetIdentities = resolveTarget(msg, targetInput, {
-      allowSelf: true,
-    });
-    const member = await getTableGroupMember(tableGroup.id, targetIdentities);
+    const hasTargetArg = args.length > 0 && subcommand !== 'help';
+    const isSelf = !msg.quoted && !msg.body?.mentionedJid?.[0] && !hasTargetArg;
+
+    // Jika melihat diri sendiri, langsung pakai ctx.tableGroupMember yang sudah diinjeksi middleware!
+    let member = isSelf ? tableGroupMember : null;
+    let nameDisplay = member?.pushname || msg.sender?.name || 'Unknown';
 
     if (!member) {
-      return msg.reply('Member tidak ditemukan dalam database grup.');
+      const targetIdentities = resolveTarget(msg, hasTargetArg ? args[0] : '', {
+        allowSelf: true,
+      });
+
+      member = await findGroupMember(tableGroup.id, targetIdentities);
+      nameDisplay = member?.pushname || targetIdentities.name || 'Unknown';
+    }
+
+    if (!member) {
+      return msg.reply(
+        'Member belum pernah berinteraksi di grup ini (tidak ada di database).'
+      );
     }
 
     const maxWarn = tableGroup.settings?.maxWarn || 3;
-    const nameDisplay = member.pushname || targetIdentities.name || 'Unknown';
     const pnDisplay = member.user_pn ? `\`${member.user_pn}\`` : '-';
     const lidDisplay = member.user_lid ? `\`${member.user_lid}\`` : '-';
     const scoreDisplay = Number(member.score || 0).toLocaleString('id-ID');

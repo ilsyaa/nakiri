@@ -1,30 +1,23 @@
 import cache from '@nakiri/core/services/cache';
 import db from '@nakiri/core/services/database';
+import { normalizeIdentity } from '#app/utils/target.js';
 
-export const defaultGroupSettings = {
+const defaultGroupSettings = {
   botAccess: 'everyone',
   maxWarn: 3,
   blockedWords: [],
 };
 
-/**
- * Clear the cached group record for a specific group JID.
- *
- * @param {string} groupId
- */
-export function clearTableGroupCache(groupId) {
-  if (groupId) {
-    cache.delete(`table_group:${groupId}`);
-  }
-}
+const toFullJid = (val, type) => {
+  if (!val) return null;
+  const norm = normalizeIdentity(val);
+  const id = norm?.id || String(val).replace(/[^0-9]/g, '');
+  if (!id) return null;
 
-/**
- * Fetch group record from cache/database, creating with defaults if absent.
- *
- * @param {string} groupId
- * @returns {Promise<Record<string, any> | null>}
- */
-export async function getTableGroup(groupId) {
+  return type === 'lid' ? `${id}@lid` : `${id}@s.whatsapp.net`;
+};
+
+async function getTableGroup(groupId) {
   if (!groupId) return null;
 
   return cache.remember(`table_group:${groupId}`, '15m', async () => {
@@ -64,22 +57,32 @@ export async function getTableGroup(groupId) {
  * Resolve or upsert a group member record by LID or phone number.
  *
  * @param {string} groupId
- * @param {{ lid?: string | null, pn?: string | null, name?: string | null }} sender
+ * @param {{ lid?: string | null, pn?: string | null, name?: string | null }} [identities]
  * @returns {Promise<Record<string, any> | null>}
  */
-export async function getTableGroupMember(
+async function getTableGroupMember(
   groupId,
-  { lid, pn, name = null } = {}
+  { lid = null, pn = null, name = null } = {}
 ) {
-  if (!groupId || (!lid && !pn)) return null;
+  const fullLid = toFullJid(lid, 'lid');
+  const fullPn = toFullJid(pn, 'pn');
+
+  if (!groupId || (!fullLid && !fullPn)) return null;
+
+  const rawLid = fullLid ? fullLid.replace(/@.*$/, '') : null;
+  const rawPn = fullPn ? fullPn.replace(/@.*$/, '') : null;
 
   const matchQuery = () =>
     db('group_members')
       .where('group_id', groupId)
       .where((qb) => {
-        if (lid && pn) qb.where('user_lid', lid).orWhere('user_pn', pn);
-        else if (lid) qb.where('user_lid', lid);
-        else if (pn) qb.where('user_pn', pn);
+        const candidates = [];
+        if (fullLid) candidates.push(fullLid);
+        if (rawLid) candidates.push(rawLid);
+        if (fullPn) candidates.push(fullPn);
+        if (rawPn) candidates.push(rawPn);
+
+        qb.whereIn('user_lid', candidates).orWhereIn('user_pn', candidates);
       });
 
   let member = await matchQuery().first();
@@ -88,8 +91,8 @@ export async function getTableGroupMember(
     try {
       const [id] = await db('group_members').insert({
         group_id: groupId,
-        user_lid: lid || null,
-        user_pn: pn || null,
+        user_lid: fullLid || null,
+        user_pn: fullPn || null,
         pushname: name || null,
       });
       member = await db('group_members').where({ id }).first();
@@ -100,10 +103,23 @@ export async function getTableGroupMember(
 
   if (member) {
     const updates = {};
-    if (!member.user_lid && lid) member.user_lid = updates.user_lid = lid;
-    if (!member.user_pn && pn) member.user_pn = updates.user_pn = pn;
-    if (name && member.pushname !== name)
+
+    if (member.user_lid && !member.user_lid.includes('@')) {
+      member.user_lid = updates.user_lid = `${member.user_lid}@lid`;
+    }
+    if (member.user_pn && !member.user_pn.includes('@')) {
+      member.user_pn = updates.user_pn = `${member.user_pn}@s.whatsapp.net`;
+    }
+
+    if (!member.user_lid && fullLid) {
+      member.user_lid = updates.user_lid = fullLid;
+    }
+    if (!member.user_pn && fullPn) {
+      member.user_pn = updates.user_pn = fullPn;
+    }
+    if (name && member.pushname !== name) {
       member.pushname = updates.pushname = name;
+    }
 
     if (Object.keys(updates).length > 0) {
       await db('group_members').where({ id: member.id }).update(updates);
@@ -126,14 +142,14 @@ export default async function groupMiddleware(payload, ctx) {
   const tableGroup = await getTableGroup(msg.chat);
   if (tableGroup) {
     Object.defineProperty(tableGroup, 'clearCache', {
-      value: () => clearTableGroupCache(msg.chat),
+      value: () => cache.delete(`table_group:${msg.chat}`),
       enumerable: false,
       configurable: true,
     });
   }
   ctx.tableGroup = tableGroup;
 
-  // 2. Resolve group member record
+  // 2. Resolve group member record (injected into ctx.tableGroupMember)
   const { lid, pn, name } = msg.sender || {};
   const member = await getTableGroupMember(tableGroup?.id, { lid, pn, name });
 

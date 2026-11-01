@@ -35,6 +35,15 @@ Dokumen ini adalah pedoman arsitektur dan standar rekayasa software untuk bot **
 >      - Gunakan bullet point simpel `• \`item\`` untuk daftar.
 >      - Gunakan monospace backticks untuk perintah atau parameter (`\`prefix add <simbol>\``).
 >      - Hindari dekorasi simbol berulang-ulang yang mengotori layar pengguna.
+> 10. **Standar Penyimpanan Identitas WhatsApp di Database (Full JID dengan `@`):**
+>
+> - WhatsApp v2 bekerja dengan dua jenis identitas: **Phone Number (PN)** (`@s.whatsapp.net`) dan **LID** (`@lid`).
+> - Seluruh data identitas pengguna yang disimpan ke tabel database (seperti `group_members.user_pn` dan `group_members.user_lid`) **WAJIB menggunakan Full JID lengkap beserta domainnya** (contoh: `628123456789@s.whatsapp.net` untuk PN, dan `198414771982429@lid` untuk LID).
+> - **DILARANG** memotong domain `@s.whatsapp.net` atau `@lid` saat menyimpan ke database agar tipe identitas selalu jelas, terbedakan, dan tidak ambigu saat berinteraksi dengan API native Zapo/WhatsApp.
+> 10. **Standar Penyimpanan Identitas WhatsApp di Database (Full JID dengan `@`):**
+>    - WhatsApp v2 bekerja dengan dua jenis identitas: **Phone Number (PN)** (`@s.whatsapp.net`) dan **LID** (`@lid`).
+>    - Seluruh data identitas pengguna yang disimpan ke tabel database (seperti `group_members.user_pn` dan `group_members.user_lid`) **WAJIB menggunakan Full JID lengkap beserta domainnya** (contoh: `628123456789@s.whatsapp.net` untuk PN, dan `198414771982429@lid` untuk LID).
+>    - **DILARANG** memotong domain `@s.whatsapp.net` atau `@lid` saat menyimpan ke database agar tipe identitas selalu jelas, terbedakan, dan tidak ambigu saat berinteraksi dengan API native Zapo/WhatsApp.
 
 ---
 
