@@ -2,7 +2,7 @@ import ff from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import { dirTemp, dirCore } from '@nakiri/core/utils/path';
+import { dirTemp, dirCore, dirStorage } from '@nakiri/core/utils/path';
 import logger from '@nakiri/core/utils/logger';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -58,7 +58,7 @@ export async function imageToWebp(buffer, memeText) {
       const bottom = parts.length > 1 ? parts.slice(1).join('|').trim() : '';
       const escape = (t) => t.replace(/'/g, '\u2019').replace(/:/g, '\\:');
       const fontPath = path
-        .join(dirCore(), 'assets/fonts/meme.ttf')
+        .join(dirStorage(), 'fonts/meme.ttf')
         .replace(/\\/g, '/')
         .replace(/:/g, '\\:');
 
@@ -89,7 +89,7 @@ export async function videoToWebp(buffer, memeText) {
       const bottom = parts.length > 1 ? parts.slice(1).join('|').trim() : '';
       const escape = (t) => t.replace(/'/g, '\u2019').replace(/:/g, '\\:');
       const fontPath = path
-        .join(dirCore(), 'assets/fonts/meme.ttf')
+        .join(dirStorage(), 'fonts/meme.ttf')
         .replace(/\\/g, '/')
         .replace(/:/g, '\\:');
 
