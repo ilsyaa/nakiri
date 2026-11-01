@@ -9,6 +9,7 @@ export const eventMiddlewares = {
   message: [
     () => import('#app/middlewares/bot-table.js'),
     () => import('#app/middlewares/bot-ignore.js'),
+    () => import('#app/middlewares/bot-mode.js'),
     () => import('#app/middlewares/group-table.js'),
     () => import('#app/middlewares/group-score.js'),
     () => import('#app/middlewares/group-mode.js'),
