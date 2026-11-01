@@ -51,8 +51,8 @@ async function findGroupMember(groupId, { lid, pn }) {
 }
 
 export default defineCommand({
-  name: 'user',
-  aliases: ['user', 'member'],
+  name: 'member',
+  aliases: ['member'],
   category: 'group',
   description:
     'Show group member database information and edit values (for admins)',
@@ -111,10 +111,10 @@ export default defineCommand({
       if (!targetIdentities.lid && !targetIdentities.pn) {
         return msg.reply(
           [
-            '｢ *panduan set user* ｣',
-            `• Reply chat: \`${p}user set <field> <nilai>\``,
-            `• Sebut target: \`${p}user set @user <field> <nilai>\``,
-            `Contoh: \`${p}user set score 100\``,
+            '｢ *panduan set member* ｣',
+            `• Reply chat: \`${p}member set <field> <nilai>\``,
+            `• Sebut target: \`${p}member set @member <field> <nilai>\``,
+            `Contoh: \`${p}member set score 100\``,
           ].join('\n')
         );
       }
@@ -149,7 +149,7 @@ export default defineCommand({
 
       if (!value) {
         return msg.reply(
-          `Tentukan nilai baru untuk field \`${field}\`.\nContoh: \`${p}user set ${field} 100\``
+          `Tentukan nilai baru untuk field \`${field}\`.\nContoh: \`${p}member set ${field} 100\``
         );
       }
 
@@ -241,11 +241,11 @@ export default defineCommand({
       lines.push(
         '',
         '*Admin Action (Reply chat target):*',
-        `• \`${p}user set score <angka>\``,
-        `• \`${p}user set warnings <angka>\``,
-        `• \`${p}user set name <nama>\``,
+        `• \`${p}member set score <angka>\``,
+        `• \`${p}member set warnings <angka>\``,
+        `• \`${p}member set name <nama>\``,
         '',
-        '_Atau sebut target: `.user set @user score 100`_'
+        `_Atau sebut target: \`${p}member set @member score 100\`_`
       );
     }
 
