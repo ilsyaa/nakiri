@@ -13,8 +13,8 @@ export const eventMiddlewares = {
     () => import('#app/middlewares/bot-shortcut.js'),
     () => import('#app/middlewares/group-table.js'),
     () => import('#app/middlewares/group-score.js'),
-    () => import('#app/middlewares/group-mode.js'),
     () => import('#app/middlewares/group-blockwords.js'),
+    () => import('#app/middlewares/group-mode.js'),
   ],
 };
 

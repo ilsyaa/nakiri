@@ -85,29 +85,74 @@ export default async function groupBlockwordsMiddleware(payload, ctx) {
     } catch {}
   }
 
-  // 3. Send concise warning notification
-  try {
-    const targetJid =
-      tableGroupMember?.user_pn ||
-      tableGroupMember?.user_lid ||
-      msg.sender?.pn ||
-      msg.sender?.lid ||
-      msg.sender?.id;
+  const targetJid =
+    tableGroupMember?.user_pn ||
+    tableGroupMember?.user_lid ||
+    msg.sender?.pn ||
+    msg.sender?.lid ||
+    msg.sender?.id;
 
-    const mentionNum = targetJid ? targetJid.split('@')[0] : '';
+  const mentionNum = targetJid ? targetJid.split('@')[0] : '';
 
-    await msg.reply(
-      [
-        '*Pesan dihapus:* Memuat konten terlarang.',
-        `• Pengirim: @${mentionNum}`,
-        `• Pelanggaran: \`${pattern}\``,
-        `• Peringatan: *${currentWarnings}* / ${maxWarn}`,
-      ].join('\n'),
-      {
-        mentions: targetJid ? [targetJid] : undefined,
+  // 3. Check if member reached or exceeded max warnings
+  if (currentWarnings >= maxWarn) {
+    // Delete record from database
+    if (tableGroupMember?.id) {
+      try {
+        await db('group_members').where({ id: tableGroupMember.id }).delete();
+      } catch (err) {
+        logger.error(
+          '[MODERATION]',
+          `Failed to delete kicked member ${tableGroupMember.id} from database: ${err.message}`
+        );
       }
-    );
-  } catch {}
+    }
+
+    // Kick member from WhatsApp group
+    const kickTarget = targetJid || msg.sender?.id;
+    try {
+      await client.group.removeParticipants(msg.chat, [kickTarget]);
+      logger.info(
+        '[MODERATION]',
+        `Kicked member ${kickTarget} in ${msg.chat} for exceeding max warnings (${currentWarnings}/${maxWarn}) via blockwords`
+      );
+    } catch (err) {
+      logger.error(
+        '[MODERATION]',
+        `Failed to kick member in ${msg.chat}: ${err.message}`
+      );
+    }
+
+    // Send max warning kick notification
+    try {
+      await msg.reply(
+        [
+          '*Pesan dihapus:* Memuat konten terlarang.',
+          `• Pengirim: @${mentionNum}`,
+          `• Pelanggaran: \`${pattern}\``,
+          `• Tindakan: *Dikeluarkan* (mencapai batas ${currentWarnings}/${maxWarn})`,
+        ].join('\n'),
+        {
+          mentions: targetJid ? [targetJid] : undefined,
+        }
+      );
+    } catch {}
+  } else {
+    // Send standard warning notification
+    try {
+      await msg.reply(
+        [
+          '*Pesan dihapus:* Memuat konten terlarang.',
+          `• Pengirim: @${mentionNum}`,
+          `• Pelanggaran: \`${pattern}\``,
+          `• Peringatan: *${currentWarnings}* / ${maxWarn}`,
+        ].join('\n'),
+        {
+          mentions: targetJid ? [targetJid] : undefined,
+        }
+      );
+    } catch {}
+  }
 
   // 4. Halt further pipeline processing
   return ctx.stop();
