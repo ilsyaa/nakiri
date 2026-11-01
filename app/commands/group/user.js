@@ -1,6 +1,7 @@
 import { defineCommand } from '#app/services/bot/index.js';
 import db from '@nakiri/core/services/database';
 import { resolveTarget } from '#app/utils/target.js';
+import { DateTime } from 'luxon';
 
 /**
  * Konfigurasi field yang diizinkan untuk diedit oleh admin grup.
@@ -15,12 +16,18 @@ const ALLOWED_EDIT_FIELDS = {
   pushname: { type: 'string', column: 'pushname' },
 };
 
-const formatDate = (val) => {
+const formatRelativeDate = (val) => {
   if (!val) return '-';
   try {
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return '-';
-    return d.toISOString().replace('T', ' ').slice(0, 19);
+    const dt =
+      typeof val === 'string'
+        ? DateTime.fromSQL(val, { zone: 'utc' })
+        : DateTime.fromJSDate(new Date(val), { zone: 'utc' });
+
+    if (!dt.isValid) return '-';
+    return (
+      dt.toRelative({ locale: 'id' }) || dt.toRelative({ locale: 'en' }) || '-'
+    );
   } catch {
     return '-';
   }
@@ -73,33 +80,51 @@ export default defineCommand({
         return msg.reply('Only Admin!');
       }
 
+      // Syntax formats:
+      // A. Reply chat: .user set score 100
+      // B. Mention: .user set @target score 100
+      // C. Tag di akhir: .user set score 100 @target
       let targetInput = '';
       let field = '';
       let value = '';
 
-      if (msg.quoted || (!msg.body?.mentionedJid?.[0] && args.length === 3)) {
+      const isFirstArgField =
+        (args[1] || '').toLowerCase() in ALLOWED_EDIT_FIELDS;
+
+      if (isFirstArgField) {
+        // Pola: .user set <field> <value> [target]
         field = (args[1] || '').toLowerCase();
-        value = args.slice(2).join(' ').trim();
-      } else if (args.length >= 4) {
+        value = args[2] || '';
+        targetInput = args.slice(3).join(' ').trim();
+      } else {
+        // Pola: .user set <target> <field> <value>
         targetInput = args[1] || '';
         field = (args[2] || '').toLowerCase();
         value = args.slice(3).join(' ').trim();
-      } else {
-        field = (args[1] || '').toLowerCase();
-        value = args.slice(2).join(' ').trim();
       }
 
+      // Jika me-reply pesan atau mengetik .user set <field> <value> tanpa target lain, fallback ke diri sendiri
       const targetIdentities = resolveTarget(msg, targetInput, {
-        allowSelf: false,
+        allowSelf: true,
       });
 
       if (!targetIdentities.lid && !targetIdentities.pn) {
         return msg.reply(
-          `Gunakan: reply chat target atau sebut target.\nContoh: \`${p}user set score 100\``
+          [
+            '｢ *panduan set user* ｣',
+            `• Reply chat: \`${p}user set <field> <nilai>\``,
+            `• Sebut target: \`${p}user set @user <field> <nilai>\``,
+            `Contoh: \`${p}user set score 100\``,
+          ].join('\n')
         );
       }
 
-      const member = await findGroupMember(tableGroup.id, targetIdentities);
+      const isSelf =
+        !msg.quoted && !msg.body?.mentionedJid?.[0] && !targetInput;
+
+      const member = isSelf
+        ? tableGroupMember
+        : await findGroupMember(tableGroup.id, targetIdentities);
 
       if (!member) {
         return msg.reply(
@@ -116,14 +141,16 @@ export default defineCommand({
           .join(', ');
         return msg.reply(
           [
-            `Field \`${field}\` tidak dapat diubah.`,
+            `Field \`${field}\` tidak valid.`,
             `Kolom yang diizinkan: ${availableFields}`,
           ].join('\n')
         );
       }
 
       if (!value) {
-        return msg.reply(`Masukkan nilai baru untuk field \`${field}\`.`);
+        return msg.reply(
+          `Tentukan nilai baru untuk field \`${field}\`.\nContoh: \`${p}user set ${field} 100\``
+        );
       }
 
       const dbColumn = fieldConfig.column || field;
@@ -173,7 +200,6 @@ export default defineCommand({
     const hasTargetArg = args.length > 0 && subcommand !== 'help';
     const isSelf = !msg.quoted && !msg.body?.mentionedJid?.[0] && !hasTargetArg;
 
-    // Jika melihat diri sendiri, langsung pakai ctx.tableGroupMember yang sudah diinjeksi middleware!
     let member = isSelf ? tableGroupMember : null;
     let nameDisplay = member?.pushname || msg.sender?.name || 'Unknown';
 
@@ -196,7 +222,7 @@ export default defineCommand({
     const pnDisplay = member.user_pn ? `\`${member.user_pn}\`` : '-';
     const lidDisplay = member.user_lid ? `\`${member.user_lid}\`` : '-';
     const scoreDisplay = Number(member.score || 0).toLocaleString('id-ID');
-    const lastActiveDisplay = formatDate(member.last_interacted_at);
+    const lastActiveDisplay = formatRelativeDate(member.last_interacted_at);
 
     const lines = [
       '｢ *member information* ｣',
@@ -214,10 +240,12 @@ export default defineCommand({
     if (isAdmin) {
       lines.push(
         '',
-        '*Admin Action:*',
+        '*Admin Action (Reply chat target):*',
         `• \`${p}user set score <angka>\``,
         `• \`${p}user set warnings <angka>\``,
-        `• \`${p}user set name <nama>\``
+        `• \`${p}user set name <nama>\``,
+        '',
+        '_Atau sebut target: `.user set @user score 100`_'
       );
     }
 
