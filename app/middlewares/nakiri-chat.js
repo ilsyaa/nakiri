@@ -30,6 +30,9 @@ export default async function botAiChatMiddleware(payload, ctx) {
   const { client, msg } = ctx;
   if (!msg || msg.flags?.fromMe || msg.flags?.isBroadcast) return;
 
+  // Ignore if an active command is triggered (with or without prefix)
+  if (ctx.command) return;
+
   // Ignore commands with prefix so we don't interfere with standard bot commands
   if (msg.body?.prefix) return;
 
