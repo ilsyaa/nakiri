@@ -1,12 +1,35 @@
 import logger from '@nakiri/core/utils/logger';
+import { searchWeb } from '#app/services/ai/tools/search.js';
+
+export const AI_TOOLS_DEFINITIONS = [
+  {
+    type: 'function',
+    function: {
+      name: 'search_web',
+      description:
+        'Search the web for up-to-date real-time information, current news, game updates, match results, weather, or facts not in memory.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'The search query keyword in Indonesian or English.',
+          },
+        },
+        required: ['query'],
+      },
+    },
+  },
+];
 
 /**
- * Call OpenAI-compatible chat completion endpoint via native fetch
+ * Call OpenAI-compatible chat completion endpoint via native fetch with Tool Calling support
  *
- * @param {Array<{ role: 'system' | 'user' | 'assistant', content: string }>} messages
+ * @param {Array<{ role: 'system' | 'user' | 'assistant' | 'tool', content?: string, tool_calls?: any[], tool_call_id?: string }>} messages
  * @param {object} [options]
  * @param {number} [options.temperature]
  * @param {number} [options.maxTokens]
+ * @param {boolean} [options.enableWebSearch]
  * @returns {Promise<string>}
  */
 export async function createChatCompletion(messages, options = {}) {
@@ -21,93 +44,142 @@ export async function createChatCompletion(messages, options = {}) {
   }
 
   const endpoint = `${baseUrl}/chat/completions`;
+  const conversation = [...messages];
+  const enableWebSearch =
+    options.enableWebSearch !== false && Boolean(process.env.TAVILY_API_KEY);
 
-  const bodyPayload = {
-    model,
-    messages,
-    stream: false,
-    temperature: options.temperature ?? 0.5,
-  };
+  const maxToolRounds = 2;
+  let currentRound = 0;
 
-  if (options.maxTokens) {
-    bodyPayload.max_tokens = options.maxTokens;
-  }
+  while (currentRound <= maxToolRounds) {
+    currentRound++;
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(bodyPayload),
-  });
+    const bodyPayload = {
+      model,
+      messages: conversation,
+      stream: false,
+      temperature: options.temperature ?? 0.5,
+    };
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    logger.error(
-      '[AI_CLIENT]',
-      `API request failed: ${response.status} ${response.statusText} - ${errorText}`
-    );
-    throw new Error(
-      `AI API Error (${response.status}): ${response.statusText}`
-    );
-  }
+    if (options.maxTokens) {
+      bodyPayload.max_tokens = options.maxTokens;
+    }
 
-  const rawBodyText = await response.text();
+    if (enableWebSearch) {
+      bodyPayload.tools = AI_TOOLS_DEFINITIONS;
+      bodyPayload.tool_choice = 'auto';
+    }
 
-  let data;
-  try {
-    data = JSON.parse(rawBodyText);
-  } catch (parseErr) {
-    // Check if provider returned Server-Sent Events (SSE / streaming) format:
-    // data: {...} \n\n data: {...}
-    if (rawBodyText.includes('data:')) {
-      const lines = rawBodyText.split('\n');
-      let combinedContent = '';
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(bodyPayload),
+    });
 
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith('data:')) continue;
-        const payloadStr = trimmed.slice(5).trim();
-        if (payloadStr === '[DONE]') continue;
+    if (!response.ok) {
+      const errorText = await response.text();
+      logger.error(
+        '[AI_CLIENT]',
+        `API request failed: ${response.status} ${response.statusText} - ${errorText}`
+      );
+      throw new Error(
+        `AI API Error (${response.status}): ${response.statusText}`
+      );
+    }
 
+    const rawBodyText = await response.text();
+    let data;
+
+    try {
+      data = JSON.parse(rawBodyText);
+    } catch (parseErr) {
+      if (rawBodyText.includes('data:')) {
+        const lines = rawBodyText.split('\n');
+        let combinedContent = '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const payloadStr = trimmed.slice(5).trim();
+          if (payloadStr === '[DONE]') continue;
+
+          try {
+            const chunk = JSON.parse(payloadStr);
+            const delta =
+              chunk.choices?.[0]?.delta?.content ||
+              chunk.choices?.[0]?.message?.content ||
+              '';
+            combinedContent += delta;
+          } catch {}
+        }
+
+        if (combinedContent.trim()) {
+          return combinedContent.trim();
+        }
+      }
+
+      const jsonMatch = rawBodyText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
         try {
-          const chunk = JSON.parse(payloadStr);
-          const delta =
-            chunk.choices?.[0]?.delta?.content ||
-            chunk.choices?.[0]?.message?.content ||
-            '';
-          combinedContent += delta;
+          data = JSON.parse(jsonMatch[0]);
         } catch {}
       }
 
-      if (combinedContent.trim()) {
-        return combinedContent.trim();
+      if (!data) {
+        logger.error(
+          '[AI_CLIENT]',
+          `JSON Parse Error (${parseErr.message}). Raw response:\n${rawBodyText.slice(0, 500)}`
+        );
+        throw parseErr;
       }
     }
 
-    // Attempt to extract the first valid JSON block
-    const jsonMatch = rawBodyText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        data = JSON.parse(jsonMatch[0]);
-      } catch {}
+    const choice = data.choices?.[0];
+    const message = choice?.message;
+
+    if (!message) {
+      throw new Error('Empty response received from AI provider');
     }
 
-    if (!data) {
-      logger.error(
-        '[AI_CLIENT]',
-        `JSON Parse Error (${parseErr.message}). Raw response:\n${rawBodyText.slice(0, 500)}`
-      );
-      throw parseErr;
+    // Check if AI requested tool execution (e.g. search_web)
+    if (message.tool_calls && message.tool_calls.length > 0) {
+      conversation.push(message);
+
+      for (const toolCall of message.tool_calls) {
+        if (toolCall.function?.name === 'search_web') {
+          let query = '';
+          try {
+            const args = JSON.parse(toolCall.function.arguments || '{}');
+            query = args.query;
+          } catch {
+            query = toolCall.function.arguments || '';
+          }
+
+          logger.info('[AI_SEARCH]', `Searching web: "${query}"`);
+          const searchResult = await searchWeb(query);
+
+          conversation.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: searchResult || 'No relevant information found on web.',
+          });
+        }
+      }
+
+      // Loop back to send tool result to LLM
+      continue;
     }
+
+    const replyContent = message.content?.trim();
+    if (!replyContent) {
+      throw new Error('Empty message content received from AI provider');
+    }
+
+    return replyContent;
   }
 
-  const replyContent = data.choices?.[0]?.message?.content?.trim();
-
-  if (!replyContent) {
-    throw new Error('Empty response received from AI provider');
-  }
-
-  return replyContent;
+  throw new Error('Exceeded maximum tool calling rounds');
 }
