@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import db from '@nakiri/core/services/database';
 import logger from '@nakiri/core/utils/logger';
 import { dirTemp } from '@nakiri/core/utils/path';
