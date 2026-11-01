@@ -38,13 +38,13 @@ export interface SenderIdentity {
 }
 
 export interface MessageBody {
-  readonly mtype: string
-  readonly rawText: string
-  readonly prefix: string
-  readonly command: string
-  readonly commandWithoutPrefix: string
-  readonly argsText: string
-  readonly args: string[]
+  mtype: string
+  rawText: string
+  prefix: string
+  command: string
+  commandWithoutPrefix: string
+  argsText: string
+  args: string[]
   readonly mentionedJid: string[]
   readonly expiration: number
 }
@@ -109,7 +109,7 @@ export interface ParsedMessage {
   readonly bot: BotIdentity
   readonly sender: SenderIdentity
   readonly body: MessageBody
-  readonly quoted: QuotedMessage | null
+  quoted: QuotedMessage | null
   send(content: string | any, options?: any): Promise<any>
   send(destination: string, content: string | any, options?: any): Promise<any>
   reply(content: string | any, options?: any): Promise<any>
