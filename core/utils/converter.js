@@ -128,9 +128,27 @@ export async function videoToWebp(buffer, memeText) {
 }
 
 export async function stickerToImage(buffer) {
-  return ffConvert(buffer, 'webp', 'png', (cmd) => {
-    cmd.addOutputOptions(['-vframes', '1', '-vcodec', 'png']);
-  });
+  try {
+    return await ffConvert(buffer, 'webp', 'png', (cmd) => {
+      cmd.addOutputOptions(['-vframes', '1', '-vcodec', 'png']);
+    });
+  } catch (err) {
+    // If FFmpeg fails on animated/extended WebP (code 69), fallback to ImageMagick
+    const tmpIn = getTmp('webp');
+    const tmpOut = getTmp('png');
+    await fs.mkdir(dirTemp(), { recursive: true });
+    await fs.writeFile(tmpIn, buffer);
+
+    try {
+      await execAsync(`convert ${tmpIn}[0] ${tmpOut}`);
+      return await fs.readFile(tmpOut);
+    } catch {
+      throw err;
+    } finally {
+      fs.unlink(tmpIn).catch(() => {});
+      fs.unlink(tmpOut).catch(() => {});
+    }
+  }
 }
 
 export async function stickerToVideo(buffer) {
