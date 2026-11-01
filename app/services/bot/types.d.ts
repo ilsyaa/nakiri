@@ -1,6 +1,8 @@
 import type { ModuleContext } from '@nakiri/core/services/modules'
+import type { ParsedMessage } from './message.js'
 
 export interface CommandContext extends ModuleContext<'message'> {
+  msg: ParsedMessage
   [key: string]: any
 }
 

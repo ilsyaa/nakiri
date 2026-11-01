@@ -100,6 +100,7 @@ export default defineCommand({
     const subcommand = (subcommandRaw || '').toLowerCase();
     const targetInput = rest.join(' ').trim();
     const prefix = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${prefix}owner`;
     const owners = Array.isArray(tableBot?.owners)
       ? tableBot.owners.map(cleanDigits)
       : [];
@@ -109,11 +110,11 @@ export default defineCommand({
       msg.reply(
         [
           '｢ *owner management* ｣',
-          `• \`${prefix}owner list\``,
-          `• \`${prefix}owner set <target>\``,
-          `• \`${prefix}owner del <target/nomor>\``,
+          `• \`${cmd} list\``,
+          `• \`${cmd} set <target>\``,
+          `• \`${cmd} del <target/nomor>\``,
           '',
-          `_Gunakan \`${prefix}owner <command>\` untuk menjalankan._`,
+          `_Gunakan \`${cmd} <command>\` untuk menjalankan._`,
         ].join('\n')
       );
 
@@ -145,7 +146,7 @@ export default defineCommand({
       const targets = await resolveIdentities(client, msg, targetInput);
       if (targets.length === 0) {
         return msg.reply(
-          `Gunakan: reply chat, tag, atau \`${prefix}owner set <nomor/lid>\``
+          `Gunakan: reply chat, tag, atau \`${cmd} set <nomor/lid>\``
         );
       }
 

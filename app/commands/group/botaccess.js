@@ -14,6 +14,7 @@ export default defineCommand({
     if (!msg) return;
 
     const prefix = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${prefix}gmode`;
     const args = msg.body?.args || [];
     const targetMode = args[0]?.toLowerCase();
 
@@ -25,12 +26,11 @@ export default defineCommand({
 
       return msg.reply(
         [
-          '*PENGATURAN AKSES PENGGUNAAN BOT*',
-          `Status saat ini: *${currentLabel}*`,
+          '｢ *pengaturan bot access* ｣',
+          `Status aktif: *${currentLabel}*`,
           '',
-          '*Pilihan Pengaturan:*',
-          `- \`${prefix}gmode everyone\` (bot dapat digunakan oleh semua member)`,
-          `- \`${prefix}gmode admin\` (bot hanya dapat digunakan oleh admin grup)`,
+          `• \`${cmd} everyone\` _(dapat digunakan semua member)_`,
+          `• \`${cmd} admin\` _(hanya dapat digunakan admin grup)_`,
         ].join('\n')
       );
     }

@@ -2,6 +2,7 @@ import { defineCommand } from '#app/services/bot/index.js';
 import db from '@nakiri/core/services/database';
 import { DateTime } from 'luxon';
 import { isLidJid } from 'zapo-js';
+import { resolveTarget } from '#app/utils/target.js';
 
 export default defineCommand({
   name: 'warn',
@@ -14,27 +15,19 @@ export default defineCommand({
     const { client, msg, tableGroup } = ctx;
     if (!msg || msg.flags.fromMe) return;
 
-    let targetChat;
-    if (msg.quoted) {
-      if (msg.quoted.flags.fromMe) return;
-      if (msg.quoted.permissions?.admin || msg.quoted.permissions?.superAdmin) {
-        return;
-      }
-      targetChat = msg.quoted.sender?.id;
-    } else if (
-      Array.isArray(msg.body?.mentionedJid) &&
-      msg.body.mentionedJid.length > 0
-    ) {
-      targetChat = msg.body.mentionedJid[0];
-    }
+    const p = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${p}warn`;
+
+    const targetIdentities = resolveTarget(msg, '', { allowSelf: false });
+    const targetChat =
+      targetIdentities.pn || targetIdentities.lid || targetIdentities.raw;
 
     if (!targetChat || !tableGroup?.id) {
-      const prefix = msg.body?.prefix || '.';
       return msg.reply(
         [
-          '*Panduan Format Perintah Warn:*',
-          `- Reply pesan member: \`${prefix}warn\``,
-          `- Tag member: \`${prefix}warn @member\``,
+          '｢ *panduan warn* ｣',
+          `• Reply chat member: \`${cmd}\``,
+          `• Tag member: \`${cmd} @member\``,
         ].join('\n')
       );
     }

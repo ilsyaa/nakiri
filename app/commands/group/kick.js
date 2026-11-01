@@ -2,6 +2,7 @@ import { defineCommand, getGroupMetadata } from '#app/services/bot/index.js';
 import db from '@nakiri/core/services/database';
 import { delay } from '@nakiri/core/utils/common';
 import logger from '@nakiri/core/utils/logger';
+import { resolveTarget } from '#app/utils/target.js';
 
 /**
  * Check if a group participant matches an actor or target identifier
@@ -42,38 +43,19 @@ export default defineCommand({
     const { client, msg } = ctx;
     if (!msg) return;
 
+    const p = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${p}kick`;
+
     // 1. Resolve targets from quote or mentions
-    const targetJids = [];
-    if (msg.quoted?.sender) {
-      if (msg.quoted.sender.id) targetJids.push(msg.quoted.sender.id);
-      if (msg.quoted.sender.pn && !targetJids.includes(msg.quoted.sender.pn)) {
-        targetJids.push(msg.quoted.sender.pn);
-      }
-      if (
-        msg.quoted.sender.lid &&
-        !targetJids.includes(msg.quoted.sender.lid)
-      ) {
-        targetJids.push(msg.quoted.sender.lid);
-      }
-    }
-    if (
-      Array.isArray(msg.body?.mentionedJid) &&
-      msg.body.mentionedJid.length > 0
-    ) {
-      for (const jid of msg.body.mentionedJid) {
-        if (!targetJids.includes(jid)) {
-          targetJids.push(jid);
-        }
-      }
-    }
+    const targetIdentities = resolveTarget(msg, '', { allowSelf: false });
+    const targetJids = targetIdentities.jids;
 
     if (targetJids.length === 0) {
-      const prefix = msg.body?.prefix || '.';
       return msg.reply(
         [
-          '*Panduan Format Perintah:*',
-          `- Reply pesan member: \`${prefix}kick\``,
-          `- Tag member: \`${prefix}kick @member\``,
+          '｢ *panduan kick* ｣',
+          `• Reply chat member: \`${cmd}\``,
+          `• Tag member: \`${cmd} @member\``,
         ].join('\n')
       );
     }

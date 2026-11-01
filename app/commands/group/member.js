@@ -63,6 +63,7 @@ export default defineCommand({
     if (!msg || !tableGroup) return;
 
     const p = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${p}member`;
     const args = msg.body?.args || [];
     const subcommand = (args[0] || '').toLowerCase();
 
@@ -112,9 +113,9 @@ export default defineCommand({
         return msg.reply(
           [
             '｢ *panduan set member* ｣',
-            `• Reply chat: \`${p}member set <field> <nilai>\``,
-            `• Sebut target: \`${p}member set @member <field> <nilai>\``,
-            `Contoh: \`${p}member set score 100\``,
+            `• Reply chat: \`${cmd} set <field> <nilai>\``,
+            `• Sebut target: \`${cmd} set @member <field> <nilai>\``,
+            `Contoh: \`${cmd} set score 100\``,
           ].join('\n')
         );
       }
@@ -149,7 +150,7 @@ export default defineCommand({
 
       if (!value) {
         return msg.reply(
-          `Tentukan nilai baru untuk field \`${field}\`.\nContoh: \`${p}member set ${field} 100\``
+          `Tentukan nilai baru untuk field \`${field}\`.\nContoh: \`${cmd} set ${field} 100\``
         );
       }
 
@@ -241,11 +242,11 @@ export default defineCommand({
       lines.push(
         '',
         '*Admin Action (Reply chat target):*',
-        `• \`${p}member set score <angka>\``,
-        `• \`${p}member set warnings <angka>\``,
-        `• \`${p}member set name <nama>\``,
+        `• \`${cmd} set score <angka>\``,
+        `• \`${cmd} set warnings <angka>\``,
+        `• \`${cmd} set name <nama>\``,
         '',
-        `_Atau sebut target: \`${p}member set @member score 100\`_`
+        `_Atau sebut target: \`${cmd} set @member score 100\`_`
       );
     }
 

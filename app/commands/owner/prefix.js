@@ -29,19 +29,20 @@ export default defineCommand({
     };
 
     const p = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${p}prefix`;
 
     // Panduan jika tanpa argumen atau subcommand tidak dikenali
     const sendGuide = () =>
       msg.reply(
         [
           '｢ *prefix management* ｣',
-          `• \`${p}prefix list\``,
-          `• \`${p}prefix add <simbol>\``,
-          `• \`${p}prefix set <simbol...>\``,
-          `• \`${p}prefix del <simbol/nomor>\``,
-          `• \`${p}prefix reset\``,
+          `• \`${cmd} list\``,
+          `• \`${cmd} add <simbol>\``,
+          `• \`${cmd} set <simbol...>\``,
+          `• \`${cmd} del <simbol/nomor>\``,
+          `• \`${cmd} reset\``,
           '',
-          `_Gunakan \`${p}prefix <command>\` untuk menjalankan._`,
+          `_Gunakan \`${cmd} <command>\` untuk menjalankan._`,
         ].join('\n')
       );
 
@@ -76,7 +77,7 @@ export default defineCommand({
       const target = rest[0]?.trim();
       if (!target) {
         return msg.reply(
-          `Masukkan simbol prefix baru.\nContoh: \`${p}prefix add /\``
+          `Masukkan simbol prefix baru.\nContoh: \`${cmd} add /\``
         );
       }
 
@@ -108,7 +109,7 @@ export default defineCommand({
 
       if (targets.length === 0) {
         return msg.reply(
-          `Tentukan minimal 1 prefix.\nContoh: \`${p}prefix set .\` atau \`${p}prefix set ! . #\``
+          `Tentukan minimal 1 prefix.\nContoh: \`${cmd} set .\` atau \`${cmd} set ! . #\``
         );
       }
 
@@ -133,7 +134,7 @@ export default defineCommand({
       const target = rest[0]?.trim();
       if (!target) {
         return msg.reply(
-          `Tentukan prefix atau nomor index yang ingin dihapus.\nContoh: \`${p}prefix del #\` atau \`${p}prefix del 2\``
+          `Tentukan prefix atau nomor index yang ingin dihapus.\nContoh: \`${cmd} del #\` atau \`${cmd} del 2\``
         );
       }
 

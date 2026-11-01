@@ -33,6 +33,7 @@ export default defineCommand({
     const [subcommandRaw, ...rest] = msg.body?.args || [];
     const subcommand = (subcommandRaw || '').toLowerCase();
     const p = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${p}shortcut`;
 
     const rawShortcuts = tableBot?.shortcuts;
     const currentShortcuts =
@@ -54,11 +55,11 @@ export default defineCommand({
       msg.reply(
         [
           '｢ *shortcut management* ｣',
-          `• \`${p}shortcut list\``,
-          `• \`${p}shortcut set <command>\` _(reply stiker)_`,
-          `• \`${p}shortcut add <emoji> <command>\``,
-          `• \`${p}shortcut del <emoji/nomor>\``,
-          `• \`${p}shortcut reset\``,
+          `• \`${cmd} list\``,
+          `• \`${cmd} set <command>\` _(reply stiker)_`,
+          `• \`${cmd} set <emoji> <command>\``,
+          `• \`${cmd} del <emoji/nomor>\``,
+          `• \`${cmd} reset\``,
           '',
           '_Shortcut mengubah stiker atau reaksi emoji menjadi pemicu perintah._',
         ].join('\n')
@@ -127,7 +128,7 @@ export default defineCommand({
         const targetCmd = cleanCommand(rest.join(' '));
         if (!targetCmd) {
           return msg.reply(
-            `Tentukan perintah target.\nContoh: \`${p}shortcut set menu\` _(sambil reply stiker)_`
+            `Tentukan perintah target.\nContoh: \`${cmd} set menu\` _(sambil reply stiker)_`
           );
         }
 
@@ -152,9 +153,9 @@ export default defineCommand({
         return msg.reply(
           [
             'Cara penggunaan:',
-            `• Reply stiker: \`${p}shortcut set <command>\``,
-            `• Pasang emoji: \`${p}shortcut set <emoji> <command>\``,
-            `Contoh: \`${p}shortcut set ❌ kick\``,
+            `• Reply stiker: \`${cmd} set <command>\``,
+            `• Pasang emoji: \`${cmd} set <emoji> <command>\``,
+            `Contoh: \`${cmd} set ❌ kick\``,
           ].join('\n')
         );
       }
@@ -180,7 +181,7 @@ export default defineCommand({
       const target = rest[0]?.trim();
       if (!target) {
         return msg.reply(
-          `Tentukan emoji atau nomor index stiker yang ingin dihapus.\nContoh: \`${p}shortcut del ❌\` atau \`${p}shortcut del 1\``
+          `Tentukan emoji atau nomor index stiker yang ingin dihapus.\nContoh: \`${cmd} del ❌\` atau \`${cmd} del 1\``
         );
       }
 

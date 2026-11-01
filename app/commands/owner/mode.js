@@ -15,6 +15,7 @@ export default defineCommand({
     const [subcommandRaw] = msg.body?.args || [];
     const subcommand = (subcommandRaw || '').toLowerCase();
     const p = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${p}mode`;
 
     const isSelf = Boolean(tableBot?.self);
     const currentMode = isSelf ? 'self' : 'public';
@@ -26,8 +27,8 @@ export default defineCommand({
           '｢ *bot mode* ｣',
           `Status aktif: *${currentMode}*`,
           '',
-          `• \`${p}mode public\``,
-          `• \`${p}mode self\``,
+          `• \`${cmd} public\``,
+          `• \`${cmd} self\``,
           '',
           '_Mode self membuat bot hanya merespons pesan dari owner._',
         ].join('\n')
@@ -70,9 +71,8 @@ export default defineCommand({
     return msg.reply(
       [
         `Argumen tidak valid: \`${subcommandRaw}\``,
-        `Gunakan \`${p}mode public\` atau \`${p}mode self\`.`,
+        `Gunakan \`${cmd} public\` atau \`${cmd} self\`.`,
       ].join('\n')
     );
   },
 });
-

@@ -14,15 +14,17 @@ export default defineCommand({
     if (!msg) return;
 
     const prefix = msg.body?.prefix || '.';
+    const cmd = msg.body?.command || `${prefix}randkick`;
     const args = msg.body?.args || [];
     if (args.length === 0) {
       return msg.reply(
         [
-          '*Panduan Format Perintah:*',
-          `- *${prefix}randkick <skor> [jumlah]*`,
-          `  Contoh: \`${prefix}randkick 0 5\` (kick 5 member acak dengan skor 0)`,
-          `- *${prefix}randkick <min-max> [jumlah]*`,
-          `  Contoh: \`${prefix}randkick 0-1 3\` (kick 3 member acak dengan skor 0 sampai 1)`,
+          '｢ *panduan randkick* ｣',
+          `• \`${cmd} <skor> [jumlah]\``,
+          `  _Contoh: \`${cmd} 0 5\` (kick 5 member acak dengan skor 0)_`,
+          '',
+          `• \`${cmd} <min-max> [jumlah]\``,
+          `  _Contoh: \`${cmd} 0-1 3\` (kick 3 member acak dengan skor 0 sampai 1)_`,
         ].join('\n')
       );
     }
