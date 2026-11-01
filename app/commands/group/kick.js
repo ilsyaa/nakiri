@@ -252,25 +252,5 @@ export default defineCommand({
 
       return `${idx + 1}. ${nameDisplay}`;
     });
-
-    const replyText =
-      kicked.length === 1 && msg.quoted
-        ? `Berhasil mengeluarkan ${listLines[0]?.replace(/^1\.\s*/, '')}.`
-        : [
-            `*KICK SELESAI*`,
-            `*Dikeluarkan:* ${kicked.length} member`,
-            '',
-            listLines.join('\n'),
-          ].join('\n');
-
-    if (msg.quoted && kicked.length === 1) {
-      await msg.quoted.reply(replyText, {
-        mentions: mentions.length > 0 ? [...new Set(mentions)] : undefined,
-      });
-    } else {
-      await msg.reply(replyText, {
-        mentions: mentions.length > 0 ? [...new Set(mentions)] : undefined,
-      });
-    }
   },
 });
