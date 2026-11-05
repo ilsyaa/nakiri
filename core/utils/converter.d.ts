@@ -1,10 +1,17 @@
+export interface WebpConvertOptions {
+  memeText?: string
+  crop?: boolean
+}
+
 export declare function imageToWebp(
   buffer: Buffer,
-  memeText?: string,
+  memeText?: string | WebpConvertOptions,
+  options?: boolean | WebpConvertOptions,
 ): Promise<Buffer>
 export declare function videoToWebp(
   buffer: Buffer,
-  memeText?: string,
+  memeText?: string | WebpConvertOptions,
+  options?: boolean | WebpConvertOptions,
 ): Promise<Buffer>
 export declare function stickerToImage(buffer: Buffer): Promise<Buffer>
 export declare function stickerToVideo(buffer: Buffer): Promise<Buffer>

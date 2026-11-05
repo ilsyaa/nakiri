@@ -10,7 +10,8 @@ export default defineCommand({
   name: 'sticker',
   aliases: ['s', 'sticker', 'stiker', 'smeme', 'stickermeme'],
   category: 'maker',
-  description: 'Convert image/video or media URL to sticker with optional meme text',
+  description:
+    'Convert image/video or media URL to sticker with optional meme text',
 
   async execute(payload, ctx) {
     const { client, msg } = ctx;
@@ -20,7 +21,6 @@ export default defineCommand({
       let mediaBuffer = null;
       let mediaType = null; // 'image' | 'video'
       let memeText = msg.body?.argsText?.trim() || '';
-
       // 1. Resolve media source
       // Priority A: Quoted message
       if (msg.quoted) {
@@ -105,4 +105,3 @@ export default defineCommand({
     }
   },
 });
-

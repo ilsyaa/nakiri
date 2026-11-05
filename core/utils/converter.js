@@ -47,70 +47,90 @@ async function ffConvert(buffer, extIn, extOut, setup) {
   });
 }
 
-export async function imageToWebp(buffer, memeText) {
-  return ffConvert(buffer, 'jpg', 'webp', (cmd) => {
-    let vf =
-      "scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0";
+/**
+ * @param {import('./converter.d.ts').WebpConvertOptions} [options]
+ * @returns {string}
+ */
+function buildWebpFilter({ crop = true, memeText = '' } = {}) {
+  let vf = crop
+    ? 'scale=320:320:force_original_aspect_ratio=increase,crop=320:320,fps=15'
+    : "scale='min(320,iw)':'min(320,ih)':force_original_aspect_ratio=decrease,fps=15,pad=320:320:-1:-1:color=white@0.0";
+  if (memeText) {
+    const parts = memeText.split('|');
+    const top = parts[0]?.trim() || '';
+    const bottom = parts.length > 1 ? parts.slice(1).join('|').trim() : '';
+    const escape = (t) => t.replace(/'/g, '\u2019').replace(/:/g, '\\:');
+    const fontPath = path
+      .join(dirStorage(), 'fonts/meme.ttf')
+      .replace(/\\/g, '/')
+      .replace(/:/g, '\\:');
 
-    if (memeText) {
-      const parts = memeText.split('|');
-      const top = parts[0]?.trim() || '';
-      const bottom = parts.length > 1 ? parts.slice(1).join('|').trim() : '';
-      const escape = (t) => t.replace(/'/g, '\u2019').replace(/:/g, '\\:');
-      const fontPath = path
-        .join(dirStorage(), 'fonts/meme.ttf')
-        .replace(/\\/g, '/')
-        .replace(/:/g, '\\:');
-
-      if (top) {
-        vf += `, drawtext=fontfile='${fontPath}':text='${escape(top)}':fontcolor=white:fontsize=38:x=(w-text_w)/2:y=10:borderw=2:bordercolor=black`;
-      }
-
-      if (bottom) {
-        vf += `, drawtext=fontfile='${fontPath}':text='${escape(bottom)}':fontcolor=white:fontsize=38:x=(w-text_w)/2:y=(h-text_h)-10:borderw=2:bordercolor=black`;
-      }
+    if (top) {
+      vf += `, drawtext=fontfile='${fontPath}':text='${escape(top)}':fontcolor=white:fontsize=38:x=(w-text_w)/2:y=10:borderw=2:bordercolor=black`;
     }
 
-    vf +=
-      ', split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse';
+    if (bottom) {
+      vf += `, drawtext=fontfile='${fontPath}':text='${escape(bottom)}':fontcolor=white:fontsize=38:x=(w-text_w)/2:y=(h-text_h)-10:borderw=2:bordercolor=black`;
+    }
+  }
 
-    cmd.addOutputOptions(['-vcodec', 'libwebp', '-vf', vf]).toFormat('webp');
+  vf +=
+    ',split[a][b];[a]palettegen=reserve_transparent=on:transparency_color=ffffff[p];[b][p]paletteuse';
+
+  return vf;
+}
+
+/**
+ * @param {string | import('./converter.d.ts').WebpConvertOptions} [memeTextOrOptions]
+ * @param {boolean | import('./converter.d.ts').WebpConvertOptions} [options]
+ * @returns {import('./converter.d.ts').WebpConvertOptions}
+ */
+function resolveConverterOptions(memeTextOrOptions, options) {
+  let memeText;
+  let crop = true;
+  if (typeof memeTextOrOptions === 'string') {
+    memeText = memeTextOrOptions;
+  } else if (memeTextOrOptions && typeof memeTextOrOptions === 'object') {
+    memeText = memeTextOrOptions.memeText;
+    if (typeof memeTextOrOptions.crop === 'boolean') {
+      crop = memeTextOrOptions.crop;
+    }
+  }
+
+  if (typeof options === 'boolean') {
+    crop = options;
+  } else if (options && typeof options === 'object') {
+    if (typeof options.crop === 'boolean') {
+      crop = options.crop;
+    }
+  }
+
+  return { memeText, crop };
+}
+
+export async function imageToWebp(buffer, memeTextOrOptions, options) {
+  const { memeText, crop } = resolveConverterOptions(
+    memeTextOrOptions,
+    options
+  );
+  return ffConvert(buffer, 'jpg', 'webp', (cmd) => {
+    const vf = buildWebpFilter({ crop, memeText });
+    cmd.videoCodec('libwebp').videoFilters(vf).toFormat('webp');
   });
 }
 
-export async function videoToWebp(buffer, memeText) {
+export async function videoToWebp(buffer, memeTextOrOptions, options) {
+  const { memeText, crop } = resolveConverterOptions(
+    memeTextOrOptions,
+    options
+  );
   return ffConvert(buffer, 'mp4', 'webp', (cmd) => {
-    let vf =
-      "scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0";
-
-    if (memeText) {
-      const parts = memeText.split('|');
-      const top = parts[0]?.trim() || '';
-      const bottom = parts.length > 1 ? parts.slice(1).join('|').trim() : '';
-      const escape = (t) => t.replace(/'/g, '\u2019').replace(/:/g, '\\:');
-      const fontPath = path
-        .join(dirStorage(), 'fonts/meme.ttf')
-        .replace(/\\/g, '/')
-        .replace(/:/g, '\\:');
-
-      if (top) {
-        vf += `, drawtext=fontfile='${fontPath}':text='${escape(top)}':fontcolor=white:fontsize=38:x=(w-text_w)/2:y=10:borderw=2:bordercolor=black`;
-      }
-
-      if (bottom) {
-        vf += `, drawtext=fontfile='${fontPath}':text='${escape(bottom)}':fontcolor=white:fontsize=38:x=(w-text_w)/2:y=(h-text_h)-10:borderw=2:bordercolor=black`;
-      }
-    }
-
-    vf +=
-      ', split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse';
+    const vf = buildWebpFilter({ crop, memeText });
 
     cmd
-      .addOutputOptions([
-        '-vcodec',
-        'libwebp',
-        '-vf',
-        vf,
+      .videoCodec('libwebp')
+      .videoFilters(vf)
+      .outputOptions([
         '-loop',
         '0',
         '-ss',
