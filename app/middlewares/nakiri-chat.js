@@ -27,6 +27,7 @@ const randomDelay = (min, max) =>
  * @type {import('@nakiri/core/services/modules').EventMiddleware<'message'>}
  */
 export default async function botAiChatMiddleware(payload, ctx) {
+  return;
   const { client, msg } = ctx;
   if (!msg || msg.flags?.fromMe || msg.flags?.isBroadcast) return;
 
