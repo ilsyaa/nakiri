@@ -1,7 +1,8 @@
 import { defineCommand } from '#app/services/bot/index.js';
 import db from '@nakiri/core/services/database';
+import logger from '@nakiri/core/utils/logger';
 import { DateTime } from 'luxon';
-import { isLidJid } from 'zapo-js';
+import { isLidJid, getContextInfo, toUserJid } from 'zapo-js';
 import { resolveTarget } from '#app/utils/target.js';
 
 export default defineCommand({
@@ -87,6 +88,42 @@ export default defineCommand({
       return msg.reply(text, { mentions: [targetChat] });
     };
 
+    // delete message
+    if (msg.quoted) {
+      try {
+        const raw = payload?.message || payload;
+        const contextInfo = getContextInfo(raw);
+        const participant =
+          (contextInfo?.participant
+            ? toUserJid(contextInfo.participant)
+            : null) ||
+          msg.quoted.sender?.id ||
+          msg.quoted.sender?.pn ||
+          msg.quoted.sender?.lid ||
+          targetChat;
+
+        if (
+          client?.message &&
+          typeof client.message.send === 'function' &&
+          msg.quoted.stanzaId
+        ) {
+          await client.message.send(msg.chat, {
+            type: 'revoke',
+            target: {
+              remoteJid: msg.chat,
+              id: msg.quoted.stanzaId,
+              fromMe: Boolean(msg.quoted.flags?.fromMe),
+              participant,
+            },
+          });
+        }
+      } catch (err) {
+        logger.error(
+          '[WARN]',
+          `Failed to delete quoted message: ${err.message}`
+        );
+      }
+    }
     if (currentWarn >= maxWarn) {
       await db('group_members').where({ id: targetMember.id }).delete();
 

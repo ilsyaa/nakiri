@@ -41,7 +41,7 @@ export async function senderGuard(payload, ctx, args = []) {
     const rejection = isOnlyOwner ? 'Only Owner!' : 'Only Admin!';
     if (typeof ctx.msg?.reply === 'function') {
       try {
-        await ctx.msg.reply(rejection);
+        // await ctx.msg.reply(rejection);
       } catch {}
     }
     return false;
@@ -137,4 +137,3 @@ export default {
   group: groupOnlyGuard,
   private: privateOnlyGuard,
 };
-
