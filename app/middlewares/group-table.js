@@ -6,6 +6,8 @@ const defaultGroupSettings = {
   botAccess: 'everyone',
   maxWarn: 3,
   blockedWords: [],
+  welcome: false,
+  goodbye: false,
 };
 
 const toFullJid = (val, type) => {
