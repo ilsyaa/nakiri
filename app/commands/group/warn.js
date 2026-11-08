@@ -171,7 +171,7 @@ export default defineCommand({
     const currentWarn = Number(targetMember?.warnings ?? 0) + 1;
 
     const sendReply = async (text) => {
-      if (msg.quoted) {
+      if (typeof msg.quoted?.reply === 'function') {
         return msg.quoted.reply(text);
       }
       return msg.reply(text, { mentions: [targetChat] });

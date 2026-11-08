@@ -1,4 +1,5 @@
-import { unwrapMessage, isLidJid, toUserJid } from 'zapo-js';
+import { unwrapMessage } from 'zapo-js';
+import { parseMessage } from '#app/services/bot/message.js';
 
 const toHex = (buf) => {
   if (!buf) return '';
@@ -64,34 +65,13 @@ export default async function botShortcutMiddleware(payload, ctx) {
       // Inject reaction target as quoted message if target key is available
       const targetKey = reaction.key;
       if (targetKey && targetKey.id) {
-        const participant =
-          targetKey.participant || targetKey.remoteJid || null;
-        let lid = null;
-        let pn = null;
-
-        if (participant) {
-          if (isLidJid(participant)) {
-            lid = participant;
-          } else {
-            pn = toUserJid(participant);
-          }
-        }
-
-        msg.quoted = /** @type {any} */ ({
-          stanzaId: targetKey.id,
-          chat: targetKey.remoteJid,
-          sender: {
-            id: pn || lid || participant,
-            lid,
-            pn,
-          },
-          flags: {
-            fromMe: Boolean(targetKey.fromMe),
-          },
-          body: {
-            rawText: '',
-          },
-        });
+        const quotedMsg = await parseMessage(
+          { key: targetKey, message: {} },
+          ctx.client,
+          ctx.tableBot
+        );
+        quotedMsg.stanzaId = targetKey.id;
+        msg.quoted = quotedMsg;
       }
 
       msg.body.command = command;
