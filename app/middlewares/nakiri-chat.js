@@ -7,6 +7,7 @@ import {
   appendChatHistory,
   sanitizeAiResponse,
 } from '#app/services/ai/persona.js';
+import { getSkillDefinitions, executeSkill } from '#app/skills/index.js';
 
 /**
  * Generate a random integer between min and max inclusive
@@ -145,18 +146,37 @@ export default async function botAiChatMiddleware(payload, ctx) {
       } catch {}
     })();
 
+    const mediaHints = [];
+    if (msg.quoted?.flags?.isImage) {
+      mediaHints.push('Pesan yang dibalas berisi gambar.');
+    }
+    if (msg.quoted?.flags?.isVideo) {
+      mediaHints.push('Pesan yang dibalas berisi video.');
+    }
+    if (msg.flags?.isImage) {
+      mediaHints.push('Pesan ini berisi gambar.');
+    }
+    if (msg.flags?.isVideo) {
+      mediaHints.push('Pesan ini berisi video.');
+    }
+
     const messagesPayload = await buildChatPayload({
       chatId: msg.chat,
       senderName,
       userText: cleanedText,
       isGroup,
       prefixes: ctx.tableBot?.prefixes,
+      mediaContext: mediaHints.join(' '),
     });
+
+    const skillContext = { client, msg, payload, ctx };
 
     // Request AI completion
     const replyContent = await createChatCompletion(messagesPayload, {
       temperature: AI_CONFIG.TEMPERATURE,
       maxTokens: AI_CONFIG.MAX_TOKENS,
+      tools: getSkillDefinitions(),
+      executeTool: (name, rawArgs) => executeSkill(name, rawArgs, skillContext),
     });
 
     // Wait until initial typing starts before clearing

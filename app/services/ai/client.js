@@ -30,6 +30,9 @@ export const AI_TOOLS_DEFINITIONS = [
  * @param {number} [options.temperature]
  * @param {number} [options.maxTokens]
  * @param {boolean} [options.enableWebSearch]
+ * @param {Array<object>} [options.tools] - Additional OpenAI-compatible tool definitions
+ * @param {(name: string, rawArgs: string) => Promise<string> | string} [options.executeTool]
+ * @param {number} [options.maxToolRounds=4]
  * @returns {Promise<string>}
  */
 export async function createChatCompletion(messages, options = {}) {
@@ -47,8 +50,13 @@ export async function createChatCompletion(messages, options = {}) {
   const conversation = [...messages];
   const enableWebSearch =
     options.enableWebSearch !== false && Boolean(process.env.TAVILY_API_KEY);
+  const skillTools = Array.isArray(options.tools) ? options.tools : [];
+  const executeTool =
+    typeof options.executeTool === 'function' ? options.executeTool : null;
 
-  const maxToolRounds = 2;
+  const maxToolRounds = Number.isInteger(options.maxToolRounds)
+    ? options.maxToolRounds
+    : 4;
   let currentRound = 0;
 
   while (currentRound <= maxToolRounds) {
@@ -65,8 +73,13 @@ export async function createChatCompletion(messages, options = {}) {
       bodyPayload.max_tokens = options.maxTokens;
     }
 
-    if (enableWebSearch) {
-      bodyPayload.tools = AI_TOOLS_DEFINITIONS;
+    const tools = [
+      ...(enableWebSearch ? AI_TOOLS_DEFINITIONS : []),
+      ...skillTools,
+    ];
+
+    if (tools.length > 0) {
+      bodyPayload.tools = tools;
       bodyPayload.tool_choice = 'auto';
     }
 
@@ -144,29 +157,43 @@ export async function createChatCompletion(messages, options = {}) {
       throw new Error('Empty response received from AI provider');
     }
 
-    // Check if AI requested tool execution (e.g. search_web)
+    // Check if AI requested tool execution (search_web or a registered skill)
     if (message.tool_calls && message.tool_calls.length > 0) {
       conversation.push(message);
 
       for (const toolCall of message.tool_calls) {
-        if (toolCall.function?.name === 'search_web') {
+        const toolName = toolCall.function?.name || '';
+        const rawArgs = toolCall.function?.arguments || '{}';
+        let toolResult = '';
+
+        if (toolName === 'search_web') {
           let query = '';
           try {
-            const args = JSON.parse(toolCall.function.arguments || '{}');
+            const args = JSON.parse(rawArgs || '{}');
             query = args.query;
           } catch {
-            query = toolCall.function.arguments || '';
+            query = rawArgs || '';
           }
 
           logger.info('[AI_SEARCH]', `Searching web: "${query}"`);
-          const searchResult = await searchWeb(query);
-
-          conversation.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: searchResult || 'No relevant information found on web.',
-          });
+          toolResult =
+            (await searchWeb(query)) || 'No relevant information found on web.';
+        } else if (executeTool) {
+          try {
+            toolResult = await executeTool(toolName, rawArgs);
+          } catch (err) {
+            logger.error(
+              '[AI_CLIENT]',
+              `Tool "${toolName}" failed: ${err.message}`
+            );
+          }
         }
+
+        conversation.push({
+          role: 'tool',
+          tool_call_id: toolCall.id,
+          content: toolResult || `Tool "${toolName}" is not available.`,
+        });
       }
 
       // Loop back to send tool result to LLM
