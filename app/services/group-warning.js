@@ -293,7 +293,7 @@ export async function applyGroupWarning({
         `Member ${kickedJid} removed from group ${msg.chat} after reaching max warnings.`
       );
       await sendReply(
-        `Dikeluarkan karena telah mencapai batas peringatan (${currentWarn}/${maxWarn})${reasonSuffix}.`
+        `Dikeluarkan karena telah mencapai batas peringatan (${currentWarn}/${maxWarn})\n> ${reasonSuffix}.`
       );
       return { currentWarn, maxWarn, kicked: true };
     }
@@ -317,7 +317,7 @@ export async function applyGroupWarning({
   targetMember.last_warned_at = now;
 
   await sendReply(
-    `Mendapatkan peringatan ke-${currentWarn}/${maxWarn}${reasonSuffix}`
+    `Mendapatkan peringatan ke-${currentWarn}/${maxWarn}\n> ${reasonSuffix}`
   );
   return { currentWarn, maxWarn, kicked: false };
 }
