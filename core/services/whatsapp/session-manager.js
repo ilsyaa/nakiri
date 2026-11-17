@@ -1,4 +1,5 @@
 import { WaClient } from 'zapo-js';
+import { voipPlugin } from '@zapo-js/voip';
 
 /**
  * Fatal disconnect reasons where automatic reconnection should NOT be attempted.
@@ -190,6 +191,7 @@ export class SessionManager {
         sessionId,
         maxReconnectAttempts: 0, // Prevent WaComms internal reconnect loop; let SessionManager control lifecycle
         recoverFromClientTooOld: true, // Automatically handle HTTP 405 WA Web version bumps
+        plugins: [voipPlugin({ maxConcurrentCalls: 1, logLevel: 'warn' })],
       },
       this.logger.createZapoErrorLogger(sessionId)
     );

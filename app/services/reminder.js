@@ -1,5 +1,6 @@
 import db from '@nakiri/core/services/database';
 import logger from '@nakiri/core/utils/logger';
+import { delay } from '@nakiri/core/utils/common';
 import { DateTime } from 'luxon';
 import { composeReminderMessage } from '#app/services/ai/reminder.js';
 import {
@@ -10,6 +11,7 @@ import {
 export const DEFAULT_REMINDER_TIMEZONE = 'Asia/Jakarta';
 export const MAX_ACTIVE_REMINDERS = 10;
 export const MAX_REMINDER_MESSAGE_LENGTH = 500;
+export const MAX_CALL_SECONDS = 30;
 
 const SCHEDULER_INTERVAL_MS = 30_000;
 const DUE_BATCH_SIZE = 20;
@@ -334,6 +336,7 @@ export function formatReminderTime(reminder, timezone) {
  * @param {string} options.message
  * @param {string} options.schedule
  * @param {boolean} [options.ai=false]
+ * @param {number} [options.callSeconds=0]
  * @param {string} [options.timezone]
  * @returns {Promise<{ ok: true, reminder: Record<string, any> } | { ok: false, error: string }>}
  */
@@ -345,6 +348,7 @@ export async function createReminder({
   message,
   schedule,
   ai = false,
+  callSeconds = 0,
   timezone = DEFAULT_REMINDER_TIMEZONE,
 }) {
   if (!sessionId || !chatJid) {
@@ -361,9 +365,21 @@ export async function createReminder({
     return { ok: false, error: 'invalid_schedule' };
   }
 
+  const ringSeconds = Number(callSeconds || 0);
+  if (
+    !Number.isInteger(ringSeconds) ||
+    ringSeconds < 0 ||
+    ringSeconds > MAX_CALL_SECONDS
+  ) {
+    return { ok: false, error: 'invalid_call_seconds' };
+  }
+
   const owner = resolveSender(sender);
   if (!owner.jid) {
     return { ok: false, error: 'invalid_sender' };
+  }
+  if (ringSeconds > 0 && !owner.pn) {
+    return { ok: false, error: 'call_requires_pn' };
   }
 
   const countRow = await db('reminders')
@@ -394,6 +410,7 @@ export async function createReminder({
     day_of_month: parsed.dayOfMonth,
     schedule_text: parsed.scheduleText,
     next_run_at: toSqlDate(parsed.nextRunAt),
+    call_seconds: ringSeconds,
     status: 'active',
     created_at: nowSql,
     updated_at: nowSql,
@@ -418,6 +435,7 @@ export async function createReminder({
       day_of_month: parsed.dayOfMonth,
       schedule_text: parsed.scheduleText,
       next_run_at: toSqlDate(parsed.nextRunAt),
+      call_seconds: ringSeconds,
       status: 'active',
     },
   };
@@ -565,6 +583,44 @@ export async function claimReminder(reminder, now = DateTime.utc()) {
  * @returns {Promise<string>}
  */
 export async function deliverReminder(reminder, client) {
+  const ringSeconds = Number(reminder.call_seconds || 0);
+  const isGroupChat = String(reminder.chat_jid).endsWith('@g.us');
+  const callJid =
+    reminder.sender_pn ||
+    (!isGroupChat && String(reminder.chat_jid).endsWith('@s.whatsapp.net')
+      ? reminder.chat_jid
+      : null);
+
+  if (
+    ringSeconds > 0 &&
+    callJid &&
+    client.voip?.startCall &&
+    client.voip?.endCall
+  ) {
+    try {
+      const callId = await client.voip.startCall({
+        peerJid: callJid,
+        isVideo: false,
+      });
+      logger.info(
+        '[REMINDER]',
+        `Miscall ${callJid} for ${ringSeconds}s (reminder ${reminder.id})`
+      );
+      await delay(ringSeconds * 1000);
+      await client.voip.endCall(callId);
+    } catch (err) {
+      logger.error(
+        '[REMINDER]',
+        `Miscall failed for reminder ${reminder.id}: ${err.message}`
+      );
+    }
+  } else if (ringSeconds > 0) {
+    logger.warn(
+      '[REMINDER]',
+      `Miscall skipped for reminder ${reminder.id}: call target or VoIP plugin is unavailable`
+    );
+  }
+
   const body =
     reminder.mode === 'ai'
       ? await composeReminderMessage({
@@ -574,16 +630,19 @@ export async function deliverReminder(reminder, client) {
         })
       : reminder.message;
 
-  const isGroup = String(reminder.chat_jid).endsWith('@g.us');
-  const mentionJid = isGroup
-    ? reminder.sender_pn || reminder.sender_jid || null
-    : null;
+  // A miscall goes to one person. In a group, keep the text with the same person.
+  const sendToDm = Boolean(ringSeconds > 0 && isGroupChat && callJid);
+  const targetChat = sendToDm ? callJid : reminder.chat_jid;
+  const mentionJid =
+    isGroupChat && !sendToDm
+      ? reminder.sender_pn || reminder.sender_jid || null
+      : null;
   const text = mentionJid
     ? `@${String(mentionJid).split('@')[0]} ${body}`
     : body;
 
   await client.message.send(
-    reminder.chat_jid,
+    targetChat,
     text,
     mentionJid ? { mentions: [mentionJid] } : undefined
   );

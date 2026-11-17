@@ -26,6 +26,13 @@ export default defineSkill({
         description:
           'Set true when the user wants Nakiri to rewrite the reminder naturally at delivery time instead of sending the exact static text.',
       },
+      call_seconds: {
+        type: 'integer',
+        minimum: 1,
+        maximum: 30,
+        description:
+          'If the user asks to be called or miscalled, ring for this many seconds before sending the reminder text. Omit for message-only reminders.',
+      },
     },
     required: ['schedule', 'message'],
   },
@@ -44,6 +51,7 @@ export default defineSkill({
       message: args?.message,
       schedule: args?.schedule,
       ai: Boolean(args?.ai),
+      callSeconds: Number(args?.call_seconds || 0),
     });
 
     if (!result.ok) {
@@ -56,10 +64,19 @@ export default defineSkill({
       if (result.error === 'invalid_message') {
         return `Reminder message must be 1-${MAX_REMINDER_MESSAGE_LENGTH} characters.`;
       }
+      if (result.error === 'invalid_call_seconds') {
+        return 'Invalid miscall duration. Use 1-30 seconds.';
+      }
+      if (result.error === 'call_requires_pn') {
+        return 'Miscall requires a phone-number JID, not a LID.';
+      }
       return 'Failed to create the reminder.';
     }
 
     const reminder = result.reminder;
-    return `Reminder scheduled. Next trigger: ${formatReminderTime(reminder)}. Reply to the user naturally in Nakiri's voice, in one short sentence. Do not mention the id, mode, or technical fields unless the user asks.`;
+    const callDetail = reminder.call_seconds
+      ? ` Miscall: ${reminder.call_seconds}s.`
+      : '';
+    return `Reminder scheduled. Next trigger: ${formatReminderTime(reminder)}.${callDetail} Reply to the user naturally in Nakiri's voice, in one short sentence. Do not mention the id or technical fields unless the user asks.`;
   },
 });
