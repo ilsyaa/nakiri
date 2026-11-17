@@ -1,4 +1,4 @@
-import { defineCommand } from '#app/services/bot/index.js';
+import { defineCommand, getGroupMetadata } from '#app/services/bot/index.js';
 import db from '@nakiri/core/services/database';
 import logger from '@nakiri/core/utils/logger';
 import { DateTime } from 'luxon';
@@ -56,11 +56,16 @@ export default defineCommand({
       );
     }
 
-    // Resolve group participants (live query with fallback to msg.group)
-    let participants = msg.group?.participants;
-    if (!participants || participants.length === 0) {
+    // Resolve group participants (cached metadata, live query as fallback)
+    let participants = [];
+    try {
+      const metadata = await getGroupMetadata(client, msg.chat);
+      participants = metadata?.participants || [];
+    } catch {}
+    if (participants.length === 0) {
       try {
         const metadata = await client.group?.queryGroupMetadata(msg.chat);
+        // @ts-ignore
         participants = metadata?.participants || [];
       } catch {}
     }
@@ -215,9 +220,7 @@ export default defineCommand({
     }
     if (currentWarn >= maxWarn) {
       const kickJid =
-        targetParticipant?.jid ||
-        targetMember?.user_pn ||
-        targetChat;
+        targetParticipant?.jid || targetMember?.user_pn || targetChat;
 
       let kickSuccess = false;
       try {

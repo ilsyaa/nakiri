@@ -623,7 +623,6 @@ export async function parseMessage(payload, client = null, botSettings = null) {
       expiration,
     },
     quoted,
-    group: groupMeta || null,
   };
 
   // Attach non-enumerable helper wrappers to avoid polluting console.log(msg)

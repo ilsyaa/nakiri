@@ -103,7 +103,6 @@ export interface QuotedMessage {
 
 export interface ParsedMessage {
   readonly chat: string
-  readonly group: any | null
   readonly flags: MessageFlags
   readonly permissions: MessagePermissions
   readonly bot: BotIdentity
