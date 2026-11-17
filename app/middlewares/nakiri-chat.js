@@ -150,6 +150,7 @@ export default async function botAiChatMiddleware(payload, ctx) {
       senderName,
       userText: cleanedText,
       isGroup,
+      prefixes: ctx.tableBot?.prefixes,
     });
 
     // Request AI completion
