@@ -23,11 +23,11 @@ const randomDelay = (min, max) =>
  * 1. Bot is explicitly mentioned (@Nakiri)
  * 2. Message quotes / replies to a message sent by the bot
  * 3. Text mentions the name "nakiri"
+ * 4. Private chat and the message is not a command
  *
  * @type {import('@nakiri/core/services/modules').EventMiddleware<'message'>}
  */
 export default async function botAiChatMiddleware(payload, ctx) {
-  return;
   const { client, msg } = ctx;
   if (!msg || msg.flags?.fromMe || msg.flags?.isBroadcast) return;
 
@@ -39,6 +39,8 @@ export default async function botAiChatMiddleware(payload, ctx) {
 
   // 1. Silent ignore for stickers (do not respond even if replying to bot)
   if (msg.flags?.isSticker || msg.flags?.isStickerAnimated) return;
+
+  const isGroup = Boolean(msg.flags?.isGroup);
 
   // Check trigger condition
   const botIdentifiers = new Set(
@@ -52,8 +54,9 @@ export default async function botAiChatMiddleware(payload, ctx) {
     ? AI_CONFIG.NAME_TRIGGER_REGEX.test(rawText)
     : false;
 
-  // If none of the triggers match, pass through
-  if (!isBotMentioned && !isReplyToBot && !isNameCalled) {
+  // Private chats reply automatically to any non-command message.
+  // Group chats still require an explicit mention, reply, or name call.
+  if (isGroup && !isBotMentioned && !isReplyToBot && !isNameCalled) {
     return;
   }
 
@@ -98,8 +101,6 @@ export default async function botAiChatMiddleware(payload, ctx) {
     msg.sender?.pn ||
     msg.sender?.id ||
     'Member';
-
-  const isGroup = Boolean(msg.flags?.isGroup);
 
   // Variable to track typing interval so we can clear it once AI response is ready
   let typingInterval = null;
