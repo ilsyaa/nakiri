@@ -1,12 +1,23 @@
 import logger from '@nakiri/core/utils/logger';
 import stickerSkill from './sticker.js';
 import reminderSkill from './reminder.js';
+import groupInfoSkill from './group-info.js';
+import memberInfoSkill from './member-info.js';
+import listRemindersSkill from './list-reminders.js';
+import cancelReminderSkill from './cancel-reminder.js';
 
 /**
  * Registered AI skills.
  * Add new skill modules to this list.
  */
-export const skills = [stickerSkill, reminderSkill];
+export const skills = [
+  stickerSkill,
+  reminderSkill,
+  groupInfoSkill,
+  memberInfoSkill,
+  listRemindersSkill,
+  cancelReminderSkill,
+];
 
 const skillMap = new Map(skills.map((skill) => [skill.name, skill]));
 

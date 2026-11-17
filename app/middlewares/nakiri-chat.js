@@ -8,6 +8,7 @@ import {
   sanitizeAiResponse,
 } from '#app/services/ai/persona.js';
 import { getSkillDefinitions, executeSkill } from '#app/skills/index.js';
+import { extractMentionsFromText } from '#app/services/bot/index.js';
 
 /**
  * Generate a random integer between min and max inclusive
@@ -57,7 +58,10 @@ export default async function botAiChatMiddleware(payload, ctx) {
   const botIdentifiers = new Set(
     [msg.bot?.id, msg.bot?.pn, msg.bot?.lid].filter(Boolean)
   );
-  const mentionedJids = msg.body?.mentionedJid || [];
+  const mentionedJids =
+    Array.isArray(msg.body?.mentionedJid) && msg.body.mentionedJid.length > 0
+      ? msg.body.mentionedJid
+      : extractMentionsFromText(msg.body?.rawText || '');
   const isBotMentioned = mentionedJids.some((jid) => botIdentifiers.has(jid));
   const isReplyToBot = Boolean(msg.quoted?.flags?.fromMe);
   const rawText = (msg.body?.rawText || '').trim();
@@ -167,6 +171,12 @@ export default async function botAiChatMiddleware(payload, ctx) {
       mediaHints.push('Pesan ini berisi video.');
     }
 
+    const groupRole = isGroup
+      ? msg.permissions?.bot?.admin || msg.permissions?.bot?.superAdmin
+        ? 'admin'
+        : 'member'
+      : '';
+
     const messagesPayload = await buildChatPayload({
       chatId: msg.chat,
       senderName,
@@ -174,6 +184,7 @@ export default async function botAiChatMiddleware(payload, ctx) {
       isGroup,
       prefixes: ctx.tableBot?.prefixes,
       mediaContext: mediaHints.join(' '),
+      groupRole,
     });
 
     const skillContext = { client, msg, payload, ctx };
