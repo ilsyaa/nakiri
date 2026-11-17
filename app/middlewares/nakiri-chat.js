@@ -19,12 +19,22 @@ const randomDelay = (min, max) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
 /**
+ * Check whether the AI explicitly decided not to reply.
+ *
+ * @param {string} text
+ * @returns {boolean}
+ */
+const isNoReply = (text) =>
+  String(text || '')
+    .trim()
+    .toUpperCase() === AI_CONFIG.NO_REPLY_TOKEN;
+
+/**
  * Natural Nakiri AI chat middleware.
  * Triggers only when:
  * 1. Bot is explicitly mentioned (@Nakiri)
  * 2. Message quotes / replies to a message sent by the bot
- * 3. Text mentions the name "nakiri"
- * 4. Private chat and the message is not a command
+ * 3. Private chat and the message is not a command
  *
  * @type {import('@nakiri/core/services/modules').EventMiddleware<'message'>}
  */
@@ -51,13 +61,10 @@ export default async function botAiChatMiddleware(payload, ctx) {
   const isBotMentioned = mentionedJids.some((jid) => botIdentifiers.has(jid));
   const isReplyToBot = Boolean(msg.quoted?.flags?.fromMe);
   const rawText = (msg.body?.rawText || '').trim();
-  const isNameCalled = rawText
-    ? AI_CONFIG.NAME_TRIGGER_REGEX.test(rawText)
-    : false;
 
   // Private chats reply automatically to any non-command message.
-  // Group chats still require an explicit mention, reply, or name call.
-  if (isGroup && !isBotMentioned && !isReplyToBot && !isNameCalled) {
+  // Group chats require an explicit mention or a reply to the bot.
+  if (isGroup && !isBotMentioned && !isReplyToBot) {
     return;
   }
 
@@ -195,6 +202,13 @@ export default async function botAiChatMiddleware(payload, ctx) {
 
     if (replyContent) {
       const finalReply = sanitizeAiResponse(replyContent);
+
+      if (isNoReply(finalReply)) {
+        if (typeof ctx.stop === 'function') {
+          ctx.stop();
+        }
+        return;
+      }
 
       // Save interaction to memory
       const userEntry = isGroup

@@ -4,7 +4,7 @@ import { createSticker } from '#app/services/sticker.js';
 export default defineSkill({
   name: 'create_sticker',
   description:
-    'Create and send a WhatsApp sticker from the current image/video, the quoted image/video, or a media URL. Call this only when the user explicitly asks to make a sticker.',
+    "Use when the user's intent is to create or transform an image/video into a WhatsApp sticker or meme, even if they do not use the word sticker. Do not use when stickers are only mentioned or discussed.",
   parameters: {
     type: 'object',
     properties: {

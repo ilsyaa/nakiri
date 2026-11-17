@@ -12,7 +12,10 @@ app.use([
  * Server Startup Files
  * Executed once ONLY during WhatsApp bot runtime server startup.
  */
-app.server([() => import('#app/starts/chat-buffer.js')]);
+app.server([
+  () => import('#app/starts/chat-buffer.js'),
+  () => import('#app/starts/reminder.js'),
+]);
 
 /**
  * Terminal Startup Files
