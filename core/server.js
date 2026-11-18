@@ -145,10 +145,12 @@ export const startServer = async () => {
   }
 };
 
-// Auto-start server if executed directly via node core/server.js
-const isDirectExecution = process.argv[1]
-  ?.replace(/\\/g, '/')
-  .endsWith('core/server.js');
+// Auto-start server if executed directly via node core/server.js or under PM2.
+// Under PM2 the app is launched through ProcessContainerFork.js, so argv[1]
+// never points at this file; PM2 exposes itself via process.env.pm_id.
+const isDirectExecution =
+  process.env.pm_id !== undefined ||
+  process.argv[1]?.replace(/\\/g, '/').endsWith('core/server.js');
 if (isDirectExecution) {
   startServer();
 }
