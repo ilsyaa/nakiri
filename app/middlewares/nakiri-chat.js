@@ -6,7 +6,7 @@ import {
   buildChatPayload,
   appendChatHistory,
   sanitizeAiResponse,
-} from '#app/services/ai/persona.js';
+} from '#app/services/ai/chat.js';
 import { getSkillDefinitions, executeSkill } from '#app/skills/index.js';
 import { extractMentionsFromText } from '#app/services/bot/index.js';
 

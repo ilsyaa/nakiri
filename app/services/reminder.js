@@ -576,7 +576,7 @@ export async function claimReminder(reminder, now = DateTime.utc()) {
 }
 
 /**
- * Deliver a reminder message, wrapping it with Nakiri AI when mode is `ai`.
+ * Deliver a reminder message, wrapping it with the AI persona when mode is `ai`.
  *
  * @param {Record<string, any>} reminder
  * @param {any} client

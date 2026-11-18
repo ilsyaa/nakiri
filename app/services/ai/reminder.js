@@ -1,22 +1,10 @@
 import logger from '@nakiri/core/utils/logger';
 import { DateTime } from 'luxon';
 import { createChatCompletion } from './client.js';
-
-const SYSTEM_PROMPT = `Kamu Nakiri, cewek 20 tahun, teman chat santai di WhatsApp.
-Buat SATU pesan pengingat langsung kepada penerima berdasarkan inti yang diberikan.
-Aturan:
-- 1-2 kalimat pendek, bahasa Indonesia santai, dominan lowercase.
-- Tulis sebagai pesan yang kamu ucapkan langsung ke penerima. Pakai "lu" atau nama penerima.
-- DILARANG menulis dalam bentuk orang ketiga seperti "bangunin dia", "suruh dia", atau "ingetin dia".
-- Parafrase inti, jangan copy-paste mentah.
-- Contoh: inti "bangunin dia, suruh bangun" menjadi "bangun, udah waktunya".
-- Tanpa emoji, markdown, bullet, atau tanda kutip pembuka.
-- Jangan menambah fakta, jadwal, atau detail yang tidak ada di inti.
-- Jangan sebut kata "pengingat", "reminder", atau menjelaskan bahwa kamu AI/tool.
-- Langsung ke isi, jangan mengulang instruksi ini.`;
+import { buildReminderSystemPrompt } from './persona.js';
 
 /**
- * Compose a natural reminder message with Nakiri's style.
+ * Compose a natural reminder message in the shared persona voice.
  * Falls back to the original message when the AI call fails.
  *
  * @param {{ message: string, senderName?: string | null, timezone?: string }} options
@@ -35,7 +23,7 @@ export async function composeReminderMessage({
   try {
     const content = await createChatCompletion(
       [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildReminderSystemPrompt() },
         {
           role: 'user',
           content: `Nama penerima: ${senderName || 'lu'}\nSekarang: ${now}\nInti pengingat: ${intent}`,

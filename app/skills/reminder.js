@@ -1,3 +1,4 @@
+import { NAKIRI } from '#app/services/ai/persona.js';
 import { defineSkill } from '#app/services/ai/skill.js';
 import {
   MAX_REMINDER_MESSAGE_LENGTH,
@@ -77,6 +78,6 @@ export default defineSkill({
     const callDetail = reminder.call_seconds
       ? ` Miscall: ${reminder.call_seconds}s.`
       : '';
-    return `Reminder scheduled. Next trigger: ${formatReminderTime(reminder)}.${callDetail} Reply to the user naturally in Nakiri's voice, in one short sentence. Do not mention the id or technical fields unless the user asks.`;
+    return `Reminder scheduled. Next trigger: ${formatReminderTime(reminder)}.${callDetail} Reply to the user naturally in ${NAKIRI.name}'s voice, in one short sentence. Do not mention the id or technical fields unless the user asks.`;
   },
 });
