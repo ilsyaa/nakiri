@@ -23,6 +23,20 @@ export const AI_TOOLS_DEFINITIONS = [
 ];
 
 /**
+ * Truncate a tool result before appending it to the model conversation.
+ *
+ * @param {any} value
+ * @param {number} maxChars
+ * @returns {string}
+ */
+function truncateToolResult(value, maxChars) {
+  const text = String(value ?? '');
+  return text.length > maxChars
+    ? `${text.slice(0, maxChars)}\n...[truncated]`
+    : text;
+}
+
+/**
  * Call OpenAI-compatible chat completion endpoint via native fetch with Tool Calling support
  *
  * @param {Array<{ role: 'system' | 'user' | 'assistant' | 'tool', content?: string, tool_calls?: any[], tool_call_id?: string }>} messages
@@ -32,7 +46,10 @@ export const AI_TOOLS_DEFINITIONS = [
  * @param {boolean} [options.enableWebSearch]
  * @param {Array<object>} [options.tools] - Additional OpenAI-compatible tool definitions
  * @param {(name: string, rawArgs: string) => Promise<string> | string} [options.executeTool]
- * @param {number} [options.maxToolRounds=4]
+ * @param {number} [options.maxToolRounds=3]
+ * @param {number} [options.maxToolCalls=4]
+ * @param {number} [options.maxToolResultChars=2000]
+ * @param {boolean} [options.emptyAsNoReply=false] - Return an empty string when the provider sends no content
  * @returns {Promise<string>}
  */
 export async function createChatCompletion(messages, options = {}) {
@@ -54,10 +71,21 @@ export async function createChatCompletion(messages, options = {}) {
   const executeTool =
     typeof options.executeTool === 'function' ? options.executeTool : null;
 
-  const maxToolRounds = Number.isInteger(options.maxToolRounds)
-    ? options.maxToolRounds
-    : 4;
+  const maxToolRounds =
+    Number.isInteger(options.maxToolRounds) && options.maxToolRounds > 0
+      ? options.maxToolRounds
+      : 3;
+  const maxToolCalls =
+    Number.isInteger(options.maxToolCalls) && options.maxToolCalls > 0
+      ? options.maxToolCalls
+      : 4;
+  const maxToolResultChars =
+    Number.isInteger(options.maxToolResultChars) &&
+    options.maxToolResultChars > 0
+      ? options.maxToolResultChars
+      : 2000;
   let currentRound = 0;
+  let toolCallsUsed = 0;
 
   while (currentRound <= maxToolRounds) {
     currentRound++;
@@ -159,9 +187,27 @@ export async function createChatCompletion(messages, options = {}) {
 
     // Check if AI requested tool execution (search_web or a registered skill)
     if (message.tool_calls && message.tool_calls.length > 0) {
-      conversation.push(message);
+      if (currentRound >= maxToolRounds) {
+        throw new Error('Exceeded maximum tool calling rounds');
+      }
 
-      for (const toolCall of message.tool_calls) {
+      const remainingCalls = maxToolCalls - toolCallsUsed;
+      if (remainingCalls <= 0) {
+        throw new Error('Exceeded maximum tool calls');
+      }
+
+      const toolCalls = message.tool_calls.slice(0, remainingCalls);
+      if (toolCalls.length < message.tool_calls.length) {
+        logger.warn(
+          '[AI_CLIENT]',
+          `Dropped ${message.tool_calls.length - toolCalls.length} tool call(s) over the per-request limit`
+        );
+      }
+
+      conversation.push({ ...message, tool_calls: toolCalls });
+      toolCallsUsed += toolCalls.length;
+
+      for (const toolCall of toolCalls) {
         const toolName = toolCall.function?.name || '';
         const rawArgs = toolCall.function?.arguments || '{}';
         let toolResult = '';
@@ -192,7 +238,10 @@ export async function createChatCompletion(messages, options = {}) {
         conversation.push({
           role: 'tool',
           tool_call_id: toolCall.id,
-          content: toolResult || `Tool "${toolName}" is not available.`,
+          content: truncateToolResult(
+            toolResult || `Tool "${toolName}" is not available.`,
+            maxToolResultChars
+          ),
         });
       }
 
@@ -202,6 +251,9 @@ export async function createChatCompletion(messages, options = {}) {
 
     const replyContent = message.content?.trim();
     if (!replyContent) {
+      if (options.emptyAsNoReply) {
+        return '';
+      }
       throw new Error('Empty message content received from AI provider');
     }
 

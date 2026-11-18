@@ -1,3 +1,5 @@
+import cache from '@nakiri/core/services/cache';
+import RateLimiter from '@nakiri/core/utils/rate-limiter';
 import logger from '@nakiri/core/utils/logger';
 import { delay } from '@nakiri/core/utils/common';
 import { createChatCompletion } from '#app/services/ai/client.js';
@@ -29,6 +31,9 @@ const isNoReply = (text) =>
   String(text || '')
     .trim()
     .toUpperCase() === AI_CONFIG.NO_REPLY_TOKEN;
+
+const aiRateLimiter = new RateLimiter(cache);
+const activeAiRequests = new Set();
 
 /**
  * Natural Nakiri AI chat middleware.
@@ -107,6 +112,11 @@ export default async function botAiChatMiddleware(payload, ctx) {
 
   if (!cleanedText) return;
 
+  if (cleanedText.length > AI_CONFIG.MAX_USER_CHARS) {
+    await msg.reply('pesannya kepanjangan, ringkas aja');
+    return;
+  }
+
   const senderName =
     ctx.tableGroupMember?.pushname ||
     msg.sender?.name ||
@@ -114,10 +124,37 @@ export default async function botAiChatMiddleware(payload, ctx) {
     msg.sender?.id ||
     'Member';
 
+  const rateIdentity =
+    msg.sender?.id || msg.sender?.pn || msg.sender?.lid || msg.chat;
+  const lockKey = `user:${rateIdentity}`;
+  if (activeAiRequests.has(lockKey)) return;
+
+  activeAiRequests.add(lockKey);
+
   // Variable to track typing interval so we can clear it once AI response is ready
   let typingInterval = null;
 
   try {
+    const userHits = await aiRateLimiter.hit(
+      `user:${rateIdentity}`,
+      AI_CONFIG.RATE_LIMIT_WINDOW_SECONDS
+    );
+    const chatHits = await aiRateLimiter.hit(
+      `chat:${msg.chat}`,
+      AI_CONFIG.RATE_LIMIT_WINDOW_SECONDS
+    );
+
+    if (
+      userHits > AI_CONFIG.RATE_LIMIT_MAX_REQUESTS ||
+      chatHits > AI_CONFIG.CHAT_RATE_LIMIT_MAX_REQUESTS
+    ) {
+      logger.debug(
+        '[AI_CHAT]',
+        `Rate limit reached for ${rateIdentity} in ${msg.chat}`
+      );
+      return;
+    }
+
     // -------------------------------------------------------------
     // Natural Human Simulation: Random Read Receipt (Centang Biru)
     // -------------------------------------------------------------
@@ -193,6 +230,10 @@ export default async function botAiChatMiddleware(payload, ctx) {
     const replyContent = await createChatCompletion(messagesPayload, {
       temperature: AI_CONFIG.TEMPERATURE,
       maxTokens: AI_CONFIG.MAX_TOKENS,
+      maxToolRounds: AI_CONFIG.MAX_TOOL_ROUNDS,
+      maxToolCalls: AI_CONFIG.MAX_TOOL_CALLS,
+      maxToolResultChars: AI_CONFIG.MAX_TOOL_RESULT_CHARS,
+      emptyAsNoReply: true,
       tools: getSkillDefinitions(),
       executeTool: (name, rawArgs) => executeSkill(name, rawArgs, skillContext),
     });
@@ -248,5 +289,7 @@ export default async function botAiChatMiddleware(payload, ctx) {
     } catch {}
 
     logger.error('[AI_CHAT]', `Nakiri AI chat error: ${err.message}`);
+  } finally {
+    activeAiRequests.delete(lockKey);
   }
 }

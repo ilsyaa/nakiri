@@ -15,11 +15,32 @@ export const AI_CONFIG = {
   // Maximum dialog turns remembered in one chat session
   MAX_MEMORY_TURNS: 8,
 
+  // Hard cap for a single stored turn and the whole chat memory
+  MAX_MEMORY_MESSAGE_CHARS: 1600,
+  MAX_MEMORY_CHARS: 6000,
+
   // Conversation memory TTL when there is no new interaction (20 minutes)
   MEMORY_TTL: '20m',
 
   // Number of recent group messages peeked on the first call
   AMBIENT_PEEK_LIMIT: 5,
+
+  // Keep ambient group context small so it cannot inflate the prompt
+  MAX_AMBIENT_MESSAGE_CHARS: 200,
+  MAX_AMBIENT_CONTEXT_CHARS: 800,
+
+  // Reject oversized user messages before they reach the model
+  MAX_USER_CHARS: 1500,
+
+  // Tool calling budget per AI request
+  MAX_TOOL_ROUNDS: 3,
+  MAX_TOOL_CALLS: 4,
+  MAX_TOOL_RESULT_CHARS: 2000,
+
+  // Per-user and per-chat AI request rate limits
+  RATE_LIMIT_WINDOW_SECONDS: 60,
+  RATE_LIMIT_MAX_REQUESTS: 5,
+  CHAT_RATE_LIMIT_MAX_REQUESTS: 15,
 
   // Response creativity (0.0 = rigid/factual, 0.7 = relaxed/expressive)
   TEMPERATURE: 0.7,
@@ -96,6 +117,56 @@ const dialogCache = cache.namespace('nakiri_ai_dialog');
 const commandCatalogCache = cache.namespace('ai_command_catalog');
 
 /**
+ * Truncate text to a hard character limit.
+ *
+ * @param {string} value
+ * @param {number} maxChars
+ * @returns {string}
+ */
+function truncateText(value, maxChars) {
+  const text = String(value || '');
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, Math.max(0, maxChars - 3)).trimEnd()}...`;
+}
+
+/**
+ * Keep only the newest turns that fit the turn and character budgets.
+ *
+ * @param {Array<{ role: string, content: string }>} history
+ * @returns {Array<{ role: string, content: string }>}
+ */
+function trimHistory(history) {
+  /** @type {Array<{ role: string, content: string }>} */
+  const trimmed = [];
+  let totalChars = 0;
+
+  for (let index = history.length - 1; index >= 0; index--) {
+    const turn = history[index];
+    if (!turn || typeof turn.content !== 'string') continue;
+
+    const content = truncateText(
+      turn.content,
+      AI_CONFIG.MAX_MEMORY_MESSAGE_CHARS
+    );
+    const nextTotal = totalChars + content.length;
+    const isFull =
+      trimmed.length >= AI_CONFIG.MAX_MEMORY_TURNS ||
+      (trimmed.length > 0 && nextTotal > AI_CONFIG.MAX_MEMORY_CHARS);
+
+    if (isFull) break;
+
+    trimmed.unshift({ role: turn.role, content });
+    totalChars = nextTotal;
+  }
+
+  while (trimmed.length > 0 && trimmed[0].role === 'assistant') {
+    trimmed.shift();
+  }
+
+  return trimmed;
+}
+
+/**
  * Get stored conversation history for a chat
  * @param {string} chatId
  * @returns {Promise<Array<{ role: 'system' | 'user' | 'assistant', content: string }>>}
@@ -103,7 +174,7 @@ const commandCatalogCache = cache.namespace('ai_command_catalog');
 export async function getChatHistory(chatId) {
   if (!chatId) return [];
   const history = await dialogCache.get(chatId);
-  return Array.isArray(history) ? history : [];
+  return Array.isArray(history) ? trimHistory(history) : [];
 }
 
 /**
@@ -116,12 +187,12 @@ export async function appendChatHistory(chatId, role, content) {
   if (!chatId || !content) return;
 
   const history = await getChatHistory(chatId);
-  history.push({ role, content });
+  history.push({
+    role,
+    content: truncateText(content, AI_CONFIG.MAX_MEMORY_MESSAGE_CHARS),
+  });
 
-  // Keep within MAX_MEMORY_TURNS
-  const trimmed = history.slice(-AI_CONFIG.MAX_MEMORY_TURNS);
-
-  dialogCache.set(chatId, trimmed, AI_CONFIG.MEMORY_TTL);
+  dialogCache.set(chatId, trimHistory(history), AI_CONFIG.MEMORY_TTL);
 }
 
 /**
@@ -148,10 +219,13 @@ export function getAmbientGroupContext(
   const queue = chatBuffer.buffers.get(groupId);
   if (!queue || queue.length === 0) return '';
 
-  const recent = queue.slice(-limit).map((item) => item.text);
+  const recent = queue
+    .slice(-limit)
+    .map((item) => truncateText(item.text, AI_CONFIG.MAX_AMBIENT_MESSAGE_CHARS))
+    .filter(Boolean);
   if (recent.length === 0) return '';
 
-  return recent.join('\n');
+  return truncateText(recent.join('\n'), AI_CONFIG.MAX_AMBIENT_CONTEXT_CHARS);
 }
 
 /**
@@ -269,9 +343,10 @@ export async function buildChatPayload({
   }
 
   // Format current user message with speaker tag in groups
+  const safeUserText = truncateText(userText, AI_CONFIG.MAX_USER_CHARS);
   const formattedUserMessage = isGroup
-    ? `[${senderName || 'Member'}]: ${userText}`
-    : userText;
+    ? `[${senderName || 'Member'}]: ${safeUserText}`
+    : safeUserText;
 
   messages.push({
     role: 'user',
