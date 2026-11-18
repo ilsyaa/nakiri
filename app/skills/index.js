@@ -1,5 +1,6 @@
 import logger from '@nakiri/core/utils/logger';
 import stickerSkill from './sticker.js';
+import downloadMediaSkill from './download-media.js';
 import reminderSkill from './reminder.js';
 import groupInfoSkill from './group-info.js';
 import memberInfoSkill from './member-info.js';
@@ -12,6 +13,7 @@ import cancelReminderSkill from './cancel-reminder.js';
  */
 export const skills = [
   stickerSkill,
+  downloadMediaSkill,
   reminderSkill,
   groupInfoSkill,
   memberInfoSkill,
