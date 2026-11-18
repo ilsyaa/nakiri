@@ -54,6 +54,40 @@ const MIME_TYPES = {
  * @property {Buffer} buffer
  */
 
+/**
+ * Strip invisible formatting characters that chat apps append to copied URLs.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function sanitizeUrl(value) {
+  return String(value || '')
+    .replace(/[\u200B-\u200F\u2060\uFEFF]/g, '')
+    .trim();
+}
+
+/**
+ * Read the provider's reason from a failed parse response.
+ *
+ * @param {any} json
+ * @returns {string}
+ */
+function parseFailureReason(json) {
+  const raw = String(json?.msg || '');
+  const prefix = 'parse error:';
+  if (!raw.toLowerCase().startsWith(prefix)) return '';
+
+  try {
+    const detail = JSON.parse(raw.slice(prefix.length).trim());
+    return String(detail?.msg || '')
+      .replace(/^invalid status:\s*/i, '')
+      .replace(/^error\s+/i, '')
+      .trim();
+  } catch {
+    return '';
+  }
+}
+
 function decryptPayload(ciphertext) {
   const decipher = crypto.createDecipheriv('aes-256-cbc', AES_KEY, AES_IV);
   decipher.setAutoPadding(false);
@@ -146,7 +180,11 @@ export async function parseMedia(url) {
     throw new Error('Valid media URL is required');
   }
 
-  const target = url.trim();
+  const target = sanitizeUrl(url);
+  if (!target) {
+    throw new Error('Valid media URL is required');
+  }
+
   let parsedUrl;
   try {
     parsedUrl = new URL(target);
@@ -187,7 +225,9 @@ export async function parseMedia(url) {
   }
 
   if (!json || json.status !== 1 || !json.data) {
-    throw new Error('Unsupported or unavailable media URL');
+    throw new Error(
+      parseFailureReason(json) || 'Unsupported or unavailable media URL'
+    );
   }
 
   let raw;
