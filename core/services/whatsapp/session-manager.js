@@ -19,10 +19,10 @@ const FATAL_DISCONNECT_REASONS = new Set([
 
 export class SessionManager {
   // Reconnection configuration
-  static MAX_RECONNECT_ATTEMPTS = 5;
+  static MAX_RECONNECT_ATTEMPTS = Infinity;
   static RECONNECT_BASE_DELAY_MS = 2000;
   static RECONNECT_BASE_MULTIPLIER = 1.5;
-  static RECONNECT_MAX_DELAY_MS = 30000;
+  static RECONNECT_MAX_DELAY_MS = 60000;
 
   // QR code configuration
   static MAX_QR_ROTATIONS = 6;
@@ -114,7 +114,7 @@ export class SessionManager {
     const attempts = this.reconnectAttempts.get(sessionId) ?? 0;
     const maxAttempts = SessionManager.MAX_RECONNECT_ATTEMPTS;
 
-    if (attempts >= maxAttempts) {
+    if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
       this.logger.warn(
         sessionId,
         `Max automatic reconnection attempts reached (${maxAttempts}). Stopping reconnection cycle.`
@@ -125,14 +125,20 @@ export class SessionManager {
 
     this.reconnectAttempts.set(sessionId, attempts + 1);
     const delay = Math.min(
-      SessionManager.RECONNECT_BASE_DELAY_MS *
-        Math.pow(SessionManager.RECONNECT_BASE_MULTIPLIER, attempts),
+      Math.round(
+        SessionManager.RECONNECT_BASE_DELAY_MS *
+          Math.pow(SessionManager.RECONNECT_BASE_MULTIPLIER, attempts)
+      ),
       SessionManager.RECONNECT_MAX_DELAY_MS
     );
 
+    const attemptLabel = Number.isFinite(maxAttempts)
+      ? `${attempts + 1}/${maxAttempts}`
+      : `${attempts + 1}`;
+
     this.logger.info(
       sessionId,
-      `Scheduling reconnect in ${delay}ms (attempt ${attempts + 1}/${maxAttempts})`
+      `Scheduling reconnect in ${delay}ms (attempt ${attemptLabel})`
     );
 
     const timer = setTimeout(() => {
@@ -175,6 +181,9 @@ export class SessionManager {
         );
         return;
       }
+
+      this.clients.delete(sessionId);
+      await existing.disconnect().catch(() => {});
     }
 
     this.setStatus(sessionId, 'connecting');
@@ -189,7 +198,6 @@ export class SessionManager {
       {
         store: this.store,
         sessionId,
-        maxReconnectAttempts: 0, // Prevent WaComms internal reconnect loop; let SessionManager control lifecycle
         recoverFromClientTooOld: true, // Automatically handle HTTP 405 WA Web version bumps
         plugins: [voipPlugin({ maxConcurrentCalls: 1, logLevel: 'warn' })],
       },
@@ -347,6 +355,10 @@ export class SessionManager {
     });
 
     client.on('connection', (event) => {
+      if (this.clients.get(sessionId) !== client) {
+        return;
+      }
+
       if (event.status === 'open') {
         this.clearPairingCodeTimer(sessionId);
         this.qrMap.delete(sessionId);
@@ -401,8 +413,7 @@ export class SessionManager {
       const currentStatus = this.getStatus(sessionId);
       const isPairingState =
         currentStatus === 'qr_ready' ||
-        currentStatus === 'pairing_code_ready' ||
-        currentStatus === 'connecting';
+        currentStatus === 'pairing_code_ready';
 
       if (isUnregistered && isPairingState) {
         this.logger.warn(
@@ -437,12 +448,18 @@ export class SessionManager {
     });
 
     client.connect().catch((err) => {
+      if (this.clients.get(sessionId) !== client) {
+        return;
+      }
       this.logger.error(
         sessionId,
         `Initial connection attempt failed: ${err.message}`
       );
       this.setStatus(sessionId, 'disconnected');
-      if (!this.explicitDisconnects.has(sessionId)) {
+      if (
+        !this.explicitDisconnects.has(sessionId) &&
+        !this.reconnectTimers.has(sessionId)
+      ) {
         this.scheduleReconnect(sessionId);
       }
     });
