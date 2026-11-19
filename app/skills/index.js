@@ -6,6 +6,10 @@ import groupInfoSkill from './group-info.js';
 import memberInfoSkill from './member-info.js';
 import listRemindersSkill from './list-reminders.js';
 import cancelReminderSkill from './cancel-reminder.js';
+import saveNoteSkill from './save-note.js';
+import getNoteSkill from './get-note.js';
+import listNotesSkill from './list-notes.js';
+import deleteNoteSkill from './delete-note.js';
 
 /**
  * Registered AI skills.
@@ -19,6 +23,10 @@ export const skills = [
   memberInfoSkill,
   listRemindersSkill,
   cancelReminderSkill,
+  saveNoteSkill,
+  getNoteSkill,
+  listNotesSkill,
+  deleteNoteSkill,
 ];
 
 const skillMap = new Map(skills.map((skill) => [skill.name, skill]));

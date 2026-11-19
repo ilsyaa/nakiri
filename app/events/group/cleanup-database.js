@@ -3,6 +3,7 @@ import db from '@nakiri/core/services/database';
 import cache from '@nakiri/core/services/cache';
 import logger from '@nakiri/core/utils/logger';
 import { clearGroupMetadataCache } from '#app/services/bot/index.js';
+import { deleteGroupNotes } from '#app/services/note.js';
 
 /**
  * Extract clean user digits (without :device suffix or @domain)
@@ -112,6 +113,11 @@ export default defineModule({
 
       const deletedGroup = await db('groups').where({ id: groupJid }).del();
 
+      const deletedNotes = await deleteGroupNotes({
+        sessionId: ctx?.sessionId,
+        groupJid,
+      });
+
       // Invalidate memory cache
       clearGroupMetadataCache(groupJid);
       cache.delete(`table_group:${groupJid}`);
@@ -125,7 +131,7 @@ export default defineModule({
 
       logger.info(
         '[GROUP]',
-        `Bot left or was removed from group ${groupJid} (${reason}). Purged ${deletedGroup} group record(s) and ${deletedMembers} member(s).`
+        `Bot left or was removed from group ${groupJid} (${reason}). Purged ${deletedGroup} group record(s), ${deletedMembers} member(s), and ${deletedNotes} note(s).`
       );
 
       // Halt downstream group handlers so sync won't query a group the bot left

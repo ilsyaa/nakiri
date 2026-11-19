@@ -1,6 +1,5 @@
 import cache from '@nakiri/core/services/cache';
 import chatBuffer from '#app/services/chat-buffer.js';
-import { getMenuByLabel } from '#app/services/bot/index.js';
 import { DateTime } from 'luxon';
 import {
   NAKIRI,
@@ -46,7 +45,7 @@ export const AI_CONFIG = {
   TEMPERATURE: 0.7,
 
   // Maximum response tokens so chats stay short on WhatsApp
-  MAX_TOKENS: 450,
+  MAX_TOKENS: 300,
 
   // Random delay before read receipt (ms)
   READ_DELAY_MIN_MS: 400,
@@ -114,7 +113,6 @@ export function sanitizeAiResponse(text) {
 }
 
 const dialogCache = cache.namespace('nakiri_ai_dialog');
-const commandCatalogCache = cache.namespace('ai_command_catalog');
 
 /**
  * Truncate text to a hard character limit.
@@ -229,8 +227,8 @@ export function getAmbientGroupContext(
 }
 
 /**
- * Build a compact command catalog from the bot menu registry.
- * Cached per prefix set to avoid rebuilding on every AI request.
+ * Build a short command reference without dumping the whole menu.
+ * Command questions point to the menu; skill questions are answered by the model.
  *
  * @param {string[]} [prefixes]
  * @returns {Promise<string>}
@@ -240,42 +238,14 @@ export async function buildCommandCatalog(prefixes = []) {
     .filter((prefix) => typeof prefix === 'string' && prefix.trim())
     .map((prefix) => prefix.trim());
   const displayPrefixes = cleanPrefixes.length > 0 ? cleanPrefixes : ['.'];
-  const primaryPrefix = displayPrefixes[0];
+  const menuCommand = `${displayPrefixes[0]}menu`;
 
-  return commandCatalogCache.remember(
-    displayPrefixes.join('|'),
-    '10m',
-    async () => {
-      const groups = await getMenuByLabel();
-      if (groups.size === 0) return '';
-
-      const lines = [
-        `[DAFTAR FITUR BOT ${NAKIRI.name.toUpperCase()}]`,
-        `Prefix aktif: ${displayPrefixes.map((prefix) => `\`${prefix}\``).join(', ')}`,
-        'Kalau ditanya menu atau kemampuan bot, sebutkan fitur yang relevan dari daftar ini dengan gaya santai.',
-      ];
-
-      for (const groupName of [...groups.keys()].sort()) {
-        const items = groups.get(groupName) || [];
-        if (items.length === 0) continue;
-
-        const commands = items.map((item) => {
-          const cmd = item.commands[0];
-          const command = item.withoutPrefix ? cmd : `${primaryPrefix}${cmd}`;
-          const description = (item.description || '')
-            .replace(/\s+/g, ' ')
-            .trim();
-          return description
-            ? `\`${command}\` (${description})`
-            : `\`${command}\``;
-        });
-
-        lines.push(`- ${groupName}: ${commands.join(', ')}`);
-      }
-
-      return lines.join('\n');
-    }
-  );
+  return [
+    `[REFERENSI COMMAND ${NAKIRI.name.toUpperCase()}]`,
+    `Prefix aktif: ${displayPrefixes.map((prefix) => `\`${prefix}\``).join(', ')}`,
+    `Kalau user tanya command, menu, atau cara pakai fitur bot, arahkan ke \`${menuCommand}\`. Jangan menyebut command satu per satu.`,
+    'Kalau user tanya kemampuan, jawab dari skill dengan bahasa sendiri secara singkat.',
+  ].join('\n');
 }
 
 /**
