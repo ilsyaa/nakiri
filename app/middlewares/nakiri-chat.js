@@ -1,5 +1,5 @@
 import cache from '@nakiri/core/services/cache';
-import RateLimiter from '@nakiri/core/utils/rate-limiter';
+import { RateLimiter } from '@nakiri/core/utils/rate-limiter';
 import logger from '@nakiri/core/utils/logger';
 import { delay } from '@nakiri/core/utils/common';
 import { createChatCompletion } from '#app/services/ai/client.js';
@@ -11,6 +11,7 @@ import {
 } from '#app/services/ai/chat.js';
 import { getSkillDefinitions, executeSkill } from '#app/skills/index.js';
 import { extractMentionsFromText } from '#app/services/bot/index.js';
+import { resolvePersonaModesWithClient } from '#app/services/ai/persona-mode.js';
 
 /**
  * Generate a random integer between min and max inclusive
@@ -131,9 +132,6 @@ export default async function botAiChatMiddleware(payload, ctx) {
 
   activeAiRequests.add(lockKey);
 
-  // Variable to track typing interval so we can clear it once AI response is ready
-  let typingInterval = null;
-
   try {
     const userHits = await aiRateLimiter.hit(
       `user:${rateIdentity}`,
@@ -155,44 +153,14 @@ export default async function botAiChatMiddleware(payload, ctx) {
       return;
     }
 
-    // -------------------------------------------------------------
-    // Natural Human Simulation: Random Read Receipt (Centang Biru)
-    // -------------------------------------------------------------
-    const readWait = randomDelay(
-      AI_CONFIG.READ_DELAY_MIN_MS,
-      AI_CONFIG.READ_DELAY_MAX_MS
-    );
-
-    (async () => {
-      try {
-        await delay(readWait);
-        if (payload?.key?.id) {
-          await client.message.sendReceipt(payload);
-        }
-      } catch {}
-    })();
-
-    // -------------------------------------------------------------
-    // Natural Human Simulation: Random Typing (Chatstate Composing)
-    // -------------------------------------------------------------
-    const typingWait = randomDelay(
-      AI_CONFIG.TYPING_DELAY_MIN_MS,
-      AI_CONFIG.TYPING_DELAY_MAX_MS
-    );
-
-    const startTypingPromise = (async () => {
-      try {
-        await delay(typingWait);
-        await client.presence.sendChatstate(msg.chat, { state: 'composing' });
-
-        // Keep sending composing every 4.5 seconds if AI takes longer
-        typingInterval = setInterval(() => {
-          client.presence
-            .sendChatstate(msg.chat, { state: 'composing' })
-            .catch(() => {});
-        }, 4500);
-      } catch {}
-    })();
+    // Mark the message as read before the AI request. The read receipt is the
+    // visible acknowledgment while waiting; typing only starts when a reply
+    // is actually ready to send.
+    try {
+      if (payload?.key?.id) {
+        await client.message.sendReceipt(payload);
+      }
+    } catch {}
 
     const mediaHints = [];
     if (msg.quoted?.flags?.isImage) {
@@ -214,6 +182,19 @@ export default async function botAiChatMiddleware(payload, ctx) {
         : 'member'
       : '';
 
+    const personaModes = await resolvePersonaModesWithClient({
+      sender: msg.sender,
+      tableBot: ctx.tableBot,
+      client,
+    });
+
+    if (personaModes.length > 0) {
+      logger.debug(
+        '[AI_CHAT]',
+        `Persona mode active: ${personaModes.join('+')} in ${msg.chat}`
+      );
+    }
+
     const messagesPayload = await buildChatPayload({
       chatId: msg.chat,
       senderName,
@@ -222,12 +203,12 @@ export default async function botAiChatMiddleware(payload, ctx) {
       prefixes: ctx.tableBot?.prefixes,
       mediaContext: mediaHints.join(' '),
       groupRole,
+      directAddress: isGroup,
+      personaModes,
     });
 
     const skillContext = { client, msg, payload, ctx };
-
-    // Request AI completion
-    const replyContent = await createChatCompletion(messagesPayload, {
+    const completionOptions = {
       temperature: AI_CONFIG.TEMPERATURE,
       maxTokens: AI_CONFIG.MAX_TOKENS,
       maxToolRounds: AI_CONFIG.MAX_TOOL_ROUNDS,
@@ -236,31 +217,67 @@ export default async function botAiChatMiddleware(payload, ctx) {
       emptyAsNoReply: true,
       tools: getSkillDefinitions(),
       executeTool: (name, rawArgs) => executeSkill(name, rawArgs, skillContext),
-    });
+    };
 
-    // Wait until initial typing starts before clearing
-    await startTypingPromise;
+    // Group chat only reaches this point through a direct mention or reply.
+    // Retry once when the provider returns an empty response. An explicit
+    // [NO_REPLY] is respected so closing messages stay silent without typing.
+    let replyContent = await createChatCompletion(
+      messagesPayload,
+      completionOptions
+    );
 
-    // -------------------------------------------------------------
-    // Turn off typing indicator once AI responds
-    // -------------------------------------------------------------
-    if (typingInterval) {
-      clearInterval(typingInterval);
-      typingInterval = null;
+    if (isGroup && !replyContent) {
+      logger.debug(
+        '[AI_CHAT]',
+        `Empty response for direct group message in ${msg.chat}; retrying once`
+      );
+
+      replyContent = await createChatCompletion(
+        [
+          ...messagesPayload,
+          {
+            role: 'system',
+            content:
+              '[PESAN LANGSUNG]\nUser menyapa atau membalas kamu langsung di grup ini. Balas pesan terakhir dengan singkat. Jangan keluarkan [NO_REPLY] kecuali pesannya cuma penutup.',
+          },
+        ],
+        completionOptions
+      );
     }
-    try {
-      await client.presence.sendChatstate(msg.chat, { state: 'paused' });
-    } catch {}
+
+    if (!replyContent) {
+      logger.warn('[AI_CHAT]', `Empty AI response in ${msg.chat}`);
+    } else if (isNoReply(replyContent)) {
+      logger.debug('[AI_CHAT]', `AI chose no reply in ${msg.chat}`);
+    }
 
     if (replyContent) {
       const finalReply = sanitizeAiResponse(replyContent);
 
       if (isNoReply(finalReply)) {
+        logger.debug(
+          '[AI_CHAT]',
+          `AI chose no reply after sanitize in ${msg.chat}`
+        );
         if (typeof ctx.stop === 'function') {
           ctx.stop();
         }
         return;
       }
+
+      // Show typing only after a reply exists, then send it.
+      const typingWait = randomDelay(
+        AI_CONFIG.TYPING_DELAY_MIN_MS,
+        AI_CONFIG.TYPING_DELAY_MAX_MS
+      );
+      try {
+        await client.presence.sendChatstate(msg.chat, { state: 'composing' });
+        await delay(typingWait);
+      } catch {}
+      try {
+        await client.presence.sendChatstate(msg.chat, { state: 'paused' });
+      } catch {}
 
       // Save interaction to memory
       const userEntry = isGroup
@@ -270,8 +287,17 @@ export default async function botAiChatMiddleware(payload, ctx) {
       await appendChatHistory(msg.chat, 'user', userEntry);
       await appendChatHistory(msg.chat, 'assistant', finalReply);
 
-      // Reply back to WhatsApp
-      await msg.reply(finalReply);
+      // Reply back to WhatsApp. Fall back to a plain send when quoting the
+      // group message fails, so a direct mention never ends silently.
+      try {
+        await msg.reply(finalReply);
+      } catch (sendErr) {
+        logger.warn(
+          '[AI_CHAT]',
+          `Quoted reply failed in ${msg.chat}; sending without quote: ${sendErr.message}`
+        );
+        await msg.send(finalReply);
+      }
 
       // Stop event propagation so commands/further handlers do not trigger
       if (typeof ctx.stop === 'function') {
@@ -279,11 +305,6 @@ export default async function botAiChatMiddleware(payload, ctx) {
       }
     }
   } catch (err) {
-    // Clean up typing on error
-    if (typingInterval) {
-      clearInterval(typingInterval);
-      typingInterval = null;
-    }
     try {
       await client.presence.sendChatstate(msg.chat, { state: 'paused' });
     } catch {}

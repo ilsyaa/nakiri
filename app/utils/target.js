@@ -138,7 +138,75 @@ export function resolveTarget(msg, input = '', { allowSelf = true } = {}) {
   };
 }
 
+/**
+ * Resolve the PN and LID counterparts for a target when possible.
+ *
+ * @param {any} client
+ * @param {{ pn?: string | null, lid?: string | null }} options
+ * @returns {Promise<{ pn: string | null, lid: string | null }>}
+ */
+export async function resolveContactIdentities(
+  client,
+  { pn = null, lid = null } = {}
+) {
+  let resolvedPn = null;
+  let resolvedLid = null;
+
+  const normalizedPn = normalizeIdentity(pn);
+  if (normalizedPn?.id) {
+    if (normalizedPn.isLid) resolvedLid = normalizedPn.id;
+    else resolvedPn = normalizedPn.id;
+  }
+
+  const normalizedLid = normalizeIdentity(lid);
+  if (normalizedLid?.id) {
+    if (normalizedLid.isLid) resolvedLid = normalizedLid.id;
+    else resolvedPn = normalizedLid.id;
+  }
+
+  const contactStore = client?.['stores']?.contacts;
+
+  if (resolvedPn && !resolvedLid) {
+    try {
+      const contact = await contactStore?.getByPhoneNumber?.(
+        `${resolvedPn}@s.whatsapp.net`
+      );
+      const foundLid =
+        contact?.lid ||
+        (contact?.jid && isLidJid(contact.jid) ? contact.jid : null);
+
+      if (foundLid) {
+        resolvedLid = normalizeIdentity(foundLid)?.id || null;
+      } else {
+        const response = await client?.profile?.getLidsByPhoneNumbers?.([
+          resolvedPn,
+        ]);
+        const lidJid = response?.[0]?.lidJid;
+        if (lidJid) {
+          resolvedLid = normalizeIdentity(lidJid)?.id || null;
+        }
+      }
+    } catch {}
+  }
+
+  if (resolvedLid && !resolvedPn) {
+    try {
+      const contact = await contactStore?.getByJid?.(`${resolvedLid}@lid`);
+      const foundPn =
+        contact?.phoneNumber ||
+        (contact?.jid && !isLidJid(contact.jid) ? contact.jid : null);
+
+      if (foundPn) {
+        resolvedPn = normalizeIdentity(foundPn)?.id || null;
+      }
+    } catch {}
+  }
+
+  return { pn: resolvedPn, lid: resolvedLid };
+}
+
 export default {
   normalizeIdentity,
   resolveTarget,
+  resolveContactIdentities,
 };

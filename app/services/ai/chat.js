@@ -47,11 +47,7 @@ export const AI_CONFIG = {
   // Maximum response tokens so chats stay short on WhatsApp
   MAX_TOKENS: 300,
 
-  // Random delay before read receipt (ms)
-  READ_DELAY_MIN_MS: 400,
-  READ_DELAY_MAX_MS: 1600,
-
-  // Random delay before typing indicator (ms)
+  // Random typing duration before sending a ready reply (ms)
   TYPING_DELAY_MIN_MS: 300,
   TYPING_DELAY_MAX_MS: 1200,
 
@@ -65,9 +61,10 @@ export const AI_CONFIG = {
 /**
  * Generate the chat system prompt with real-time temporal context.
  *
+ * @param {string[]} [personaModes]
  * @returns {string}
  */
-export function getSystemPrompt() {
+export function getSystemPrompt(personaModes = []) {
   const now = DateTime.now().setZone(AI_CONFIG.TIMEZONE);
   const fullDate = now.setLocale('id').toFormat('cccc, dd MMMM yyyy');
   const fullTime = now.toFormat('HH:mm');
@@ -82,7 +79,12 @@ export function getSystemPrompt() {
             ? 'sore hari'
             : 'malam hari';
 
-  return buildChatSystemPrompt({ fullDate, fullTime, timeContext });
+  return buildChatSystemPrompt({
+    fullDate,
+    fullTime,
+    timeContext,
+    personaModes,
+  });
 }
 
 /**
@@ -130,11 +132,11 @@ function truncateText(value, maxChars) {
 /**
  * Keep only the newest turns that fit the turn and character budgets.
  *
- * @param {Array<{ role: string, content: string }>} history
- * @returns {Array<{ role: string, content: string }>}
+ * @param {Array<{ role: 'system' | 'user' | 'assistant', content: string }>} history
+ * @returns {Array<{ role: 'system' | 'user' | 'assistant', content: string }>}
  */
 function trimHistory(history) {
-  /** @type {Array<{ role: string, content: string }>} */
+  /** @type {Array<{ role: 'system' | 'user' | 'assistant', content: string }>} */
   const trimmed = [];
   let totalChars = 0;
 
@@ -258,6 +260,8 @@ export async function buildCommandCatalog(prefixes = []) {
  * @param {string[]} [param0.prefixes] - Configured bot prefixes for menu context
  * @param {string} [param0.mediaContext] - Media hints for skills that need attachments
  * @param {'admin' | 'member' | ''} [param0.groupRole] - The bot's real role in the group
+ * @param {boolean} [param0.directAddress] - The message mentioned or replied to the bot
+ * @param {string[]} [param0.personaModes] - Active persona modes for this sender
  * @returns {Promise<Array<{ role: 'system' | 'user' | 'assistant', content: string }>>}
  */
 export async function buildChatPayload({
@@ -268,11 +272,15 @@ export async function buildChatPayload({
   prefixes = [],
   mediaContext = '',
   groupRole = '',
+  directAddress = false,
+  personaModes = [],
 }) {
   const history = await getChatHistory(chatId);
 
   /** @type {Array<{ role: 'system' | 'user' | 'assistant', content: string }>} */
-  const messages = [{ role: 'system', content: getSystemPrompt() }];
+  const messages = [
+    { role: 'system', content: getSystemPrompt(personaModes) },
+  ];
 
   const commandCatalog = await buildCommandCatalog(prefixes);
   if (commandCatalog) {
@@ -286,6 +294,14 @@ export async function buildChatPayload({
         groupRole === 'admin'
           ? '[PERAN GRUP]\nKamu admin di grup ini.'
           : '[PERAN GRUP]\nKamu bukan admin di grup ini.',
+    });
+  }
+
+  if (directAddress) {
+    messages.push({
+      role: 'system',
+      content:
+        '[PESAN LANGSUNG]\nPesan terakhir di-mention atau di-reply langsung ke kamu. Anggap user sedang bicara ke kamu, lalu balas pesan itu. Jangan keluarkan [NO_REPLY] kecuali isinya cuma penutup atau acknowledgment.',
     });
   }
 

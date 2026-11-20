@@ -21,6 +21,9 @@ export async function getMenuByLabel() {
   for (const cmd of commands) {
     if (!cmd.name) continue;
 
+    // A command without a description is treated as hidden from the menu.
+    if (!String(cmd.description || '').trim()) continue;
+
     const aliases = Array.isArray(cmd.aliases)
       ? cmd.aliases
           .map((a) => (typeof a === 'string' ? a.trim() : ''))

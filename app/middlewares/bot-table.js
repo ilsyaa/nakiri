@@ -18,12 +18,22 @@ export async function getTableBot() {
     const bot = await db('bots').first();
     if (!bot) return null;
 
-    for (const key of ['owners', 'prefixes', 'shortcuts']) {
+    for (const key of [
+      'owners',
+      'prefixes',
+      'shortcuts',
+      'nakiri_girlfriend',
+      'nakiri_18',
+    ]) {
       if (typeof bot[key] === 'string') {
         try {
           bot[key] = JSON.parse(bot[key]);
         } catch {}
       }
+    }
+
+    for (const key of ['nakiri_girlfriend', 'nakiri_18']) {
+      if (!Array.isArray(bot[key])) bot[key] = [];
     }
 
     return bot;

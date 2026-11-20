@@ -11,6 +11,8 @@ export async function seed(knex) {
     {
       owners: JSON.stringify(['6285174902345', '210900309037136']),
       prefixes: JSON.stringify(['!', '.', '#']),
+      nakiri_girlfriend: JSON.stringify([]),
+      nakiri_18: JSON.stringify([]),
       self: false,
     }
   );

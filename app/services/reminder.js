@@ -3,6 +3,8 @@ import logger from '@nakiri/core/utils/logger';
 import { delay } from '@nakiri/core/utils/common';
 import { DateTime } from 'luxon';
 import { composeReminderMessage } from '#app/services/ai/reminder.js';
+import { resolvePersonaModesWithClient } from '#app/services/ai/persona-mode.js';
+import { getTableBot } from '#app/middlewares/bot-table.js';
 import {
   getRememberedClient,
   getRememberedSessions,
@@ -66,7 +68,7 @@ function resolveSender(sender) {
 /**
  * Apply an ownership filter to a reminder query.
  *
- * @param {import('knex').Knex.QueryBuilder} qb
+ * @param {import('knex').Knex.QueryBuilder} builder
  * @param {{ jid: string | null, pn: string | null, lid: string | null, candidates: string[] }} owner
  */
 function scopeToOwner(builder, owner) {
@@ -561,7 +563,16 @@ export async function claimReminder(reminder, now = DateTime.utc()) {
   const scheduled = parseDbDate(reminder.next_run_at);
   const timezone = reminder.timezone || DEFAULT_REMINDER_TIMEZONE;
   const baseLocal = (scheduled > now ? scheduled : now).setZone(timezone);
-  const next = computeFollowingRun(reminder, baseLocal);
+  const next = computeFollowingRun(
+    {
+      frequency: reminder.frequency,
+      hour: reminder.hour ?? null,
+      minute: reminder.minute ?? null,
+      day_of_month: reminder.day_of_month ?? null,
+      timezone,
+    },
+    baseLocal
+  );
   if (!next) return false;
 
   const updated = await db('reminders')
@@ -621,12 +632,23 @@ export async function deliverReminder(reminder, client) {
     );
   }
 
+  const tableBot = await getTableBot().catch(() => null);
+  const personaModes = await resolvePersonaModesWithClient({
+    sender: {
+      pn: reminder.sender_pn,
+      lid: reminder.sender_lid,
+    },
+    tableBot,
+    client,
+  });
+
   const body =
     reminder.mode === 'ai'
       ? await composeReminderMessage({
           message: reminder.message,
           senderName: reminder.sender_name,
           timezone: reminder.timezone,
+          personaModes,
         })
       : reminder.message;
 
@@ -732,7 +754,7 @@ export async function processDueReminders({
 /**
  * Start the reminder scheduler loop.
  *
- * @param {{ sessionManager: any, intervalMs?: number }} options
+ * @param {{ sessionManager?: any, intervalMs?: number }} [options]
  * @returns {NodeJS.Timeout | null}
  */
 export function startReminderScheduler({
