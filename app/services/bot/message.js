@@ -102,6 +102,16 @@ export async function getGroupMetadata(client, groupJid, force = false) {
 
   if (force) {
     groupCache.delete(groupJid);
+    try {
+      const metadata = await client.group.queryGroupMetadata(groupJid);
+      if (metadata) {
+        groupCache.set(groupJid, metadata, '5m');
+        return metadata;
+      }
+      return null;
+    } catch {
+      return null;
+    }
   }
 
   try {

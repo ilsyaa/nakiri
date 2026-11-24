@@ -3,6 +3,7 @@ import { defineCommand } from '#app/services/bot/index.js';
 import { downloadMedia } from '#app/services/downloader-media.js';
 
 const URL_REGEX = /https?:\/\/[^\s<>"']+/i;
+/** @type {Record<string, 'video' | 'audio' | 'image'>} */
 const TYPE_ALIASES = {
   video: 'video',
   vid: 'video',
@@ -34,6 +35,7 @@ function extractUrl(text) {
  * @returns {{ type: 'video' | 'audio' | 'image', quality: string }}
  */
 function parseOptions(text) {
+  /** @type {'video' | 'audio' | 'image'} */
   let type = 'video';
   let quality = '';
 
