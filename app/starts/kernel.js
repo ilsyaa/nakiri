@@ -17,6 +17,7 @@ export const eventMiddlewares = {
     () => import('#app/middlewares/group-status.js'),
     () => import('#app/middlewares/group-recorder.js'),
     () => import('#app/middlewares/group-mode.js'),
+    () => import('#app/middlewares/audio-sticker-session.js'),
     () => import('#app/middlewares/nakiri-chat.js'),
   ],
 };
