@@ -281,7 +281,7 @@ async function convertVideoToStickerWebp(buffer) {
       '-t',
       String(MAX_AUDIO_STICKER_DURATION),
       '-vf',
-      `fps=${fps},scale=512:512:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000,setsar=1`,
+      `fps=${fps},scale=512:512:force_original_aspect_ratio=increase,crop=512:512,format=rgba,setsar=1`,
       '-c:v',
       'libwebp',
       '-lossless',
@@ -330,7 +330,7 @@ export async function prepareStickerBuffer(
 ) {
   let rawWebp = buffer;
   if (kind === 'image') {
-    rawWebp = await imageToWebp(buffer, { crop: false });
+    rawWebp = await imageToWebp(buffer, { crop: true });
   } else if (kind === 'video') {
     rawWebp = await convertVideoToStickerWebp(buffer);
   }
