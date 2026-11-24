@@ -18,17 +18,57 @@ export default defineCommand({
     const targetAction = args[0]?.toLowerCase();
 
     const currentStatus = Boolean(tableGroup?.settings?.goodbye);
+    const currentAiStatus = Boolean(tableGroup?.settings?.goodbyeAi);
+
+    if (targetAction === 'ai') {
+      const aiAction = args[1]?.toLowerCase();
+      if (aiAction !== 'on' && aiAction !== 'off') {
+        const aiLabel = currentAiStatus ? 'Aktif' : 'Nonaktif';
+        return msg.reply(
+          [
+            '｢ *pengaturan goodbye ai* ｣',
+            `Status AI: *${aiLabel}*`,
+            '',
+            `• \`${cmd} ai on\` _(gunakan persona AI untuk perpisahan)_`,
+            `• \`${cmd} ai off\` _(gunakan template teks standar)_`,
+          ].join('\n')
+        );
+      }
+
+      const newAiStatus = aiAction === 'on';
+      const updatedSettings = {
+        ...(tableGroup?.settings || {}),
+        goodbyeAi: newAiStatus,
+      };
+
+      await db('groups')
+        .where({ id: msg.chat })
+        .update({
+          settings: JSON.stringify(updatedSettings),
+        });
+
+      tableGroup?.clearCache?.();
+      if (tableGroup) {
+        tableGroup.settings = updatedSettings;
+      }
+
+      const statusLabel = newAiStatus ? 'diaktifkan' : 'dinonaktifkan';
+      return msg.reply(`Mode AI untuk goodbye berhasil *${statusLabel}*.`);
+    }
 
     if (targetAction !== 'on' && targetAction !== 'off') {
       const currentLabel = currentStatus ? 'Aktif' : 'Nonaktif';
+      const aiLabel = currentAiStatus ? 'Aktif' : 'Nonaktif';
 
       return msg.reply(
         [
           '｢ *pengaturan goodbye* ｣',
           `Status aktif: *${currentLabel}*`,
+          `Status AI: *${aiLabel}*`,
           '',
           `• \`${cmd} on\` _(aktifkan pesan perpisahan member keluar)_`,
           `• \`${cmd} off\` _(nonaktifkan pesan perpisahan member keluar)_`,
+          `• \`${cmd} ai on|off\` _(aktifkan/nonaktifkan gaya AI)_`,
         ].join('\n')
       );
     }

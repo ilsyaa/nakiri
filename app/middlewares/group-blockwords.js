@@ -1,6 +1,7 @@
 import db from '@nakiri/core/services/database';
 import logger from '@nakiri/core/utils/logger';
 import { matchBlockedPatterns } from '#app/utils/pattern.js';
+import { composeWarningMessage } from '#app/services/ai/group.js';
 
 /**
  * Group blocked words & link pattern guard middleware.
@@ -93,6 +94,8 @@ export default async function groupBlockwordsMiddleware(payload, ctx) {
     msg.sender?.id;
 
   const mentionNum = targetJid ? targetJid.split('@')[0] : '';
+  const targetTag = mentionNum ? `@${mentionNum}` : null;
+  const useAi = Boolean(tableGroup.settings?.warnAi);
 
   // 3. Check if member reached or exceeded max warnings
   if (currentWarnings >= maxWarn) {
@@ -110,8 +113,10 @@ export default async function groupBlockwordsMiddleware(payload, ctx) {
 
     // Kick member from WhatsApp group
     const kickTarget = targetJid || msg.sender?.id;
+    let kicked = false;
     try {
       await client.group.removeParticipants(msg.chat, [kickTarget]);
+      kicked = true;
       logger.info(
         '[MODERATION]',
         `Kicked member ${kickTarget} in ${msg.chat} for exceeding max warnings (${currentWarnings}/${maxWarn}) via blockwords`
@@ -124,33 +129,53 @@ export default async function groupBlockwordsMiddleware(payload, ctx) {
     }
 
     // Send max warning kick notification
+    const fallbackText = [
+      '*Pesan dihapus:* Memuat konten terlarang.',
+      `• Pengirim: @${mentionNum}`,
+      `• Pelanggaran: \`${pattern}\``,
+      `• Tindakan: *Dikeluarkan* (mencapai batas ${currentWarnings}/${maxWarn})`,
+    ].join('\n');
+
     try {
-      await msg.reply(
-        [
-          '*Pesan dihapus:* Memuat konten terlarang.',
-          `• Pengirim: @${mentionNum}`,
-          `• Pelanggaran: \`${pattern}\``,
-          `• Tindakan: *Dikeluarkan* (mencapai batas ${currentWarnings}/${maxWarn})`,
-        ].join('\n'),
-        {
-          mentions: targetJid ? [targetJid] : undefined,
-        }
-      );
+      const text = useAi
+        ? await composeWarningMessage({
+            currentWarn: currentWarnings,
+            maxWarn,
+            kicked,
+            kickFailed: !kicked,
+            reason: `konten terlarang (${pattern})`,
+            targetTag,
+            fallbackText,
+          })
+        : fallbackText;
+
+      await msg.reply(text, {
+        mentions: targetJid ? [targetJid] : undefined,
+      });
     } catch {}
   } else {
     // Send standard warning notification
+    const fallbackText = [
+      '*Pesan dihapus:* Memuat konten terlarang.',
+      `• Pengirim: @${mentionNum}`,
+      `• Pelanggaran: \`${pattern}\``,
+      `• Peringatan: *${currentWarnings}* / ${maxWarn}`,
+    ].join('\n');
+
     try {
-      await msg.reply(
-        [
-          '*Pesan dihapus:* Memuat konten terlarang.',
-          `• Pengirim: @${mentionNum}`,
-          `• Pelanggaran: \`${pattern}\``,
-          `• Peringatan: *${currentWarnings}* / ${maxWarn}`,
-        ].join('\n'),
-        {
-          mentions: targetJid ? [targetJid] : undefined,
-        }
-      );
+      const text = useAi
+        ? await composeWarningMessage({
+            currentWarn: currentWarnings,
+            maxWarn,
+            reason: `konten terlarang (${pattern})`,
+            targetTag,
+            fallbackText,
+          })
+        : fallbackText;
+
+      await msg.reply(text, {
+        mentions: targetJid ? [targetJid] : undefined,
+      });
     } catch {}
   }
 

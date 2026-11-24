@@ -3,6 +3,7 @@ import db from '@nakiri/core/services/database';
 import cache from '@nakiri/core/services/cache';
 import logger from '@nakiri/core/utils/logger';
 import { send, getGroupMetadata } from '#app/services/bot/index.js';
+import { composeGreetingMessage } from '#app/services/ai/group.js';
 
 const DEBOUNCE_DELAY_MS = 3500;
 const MAX_WAIT_MS = 10000;
@@ -125,30 +126,40 @@ async function flushBuffer(groupJid) {
   if (!client) return;
 
   try {
-    const metadata = await getGroupMetadata(client, groupJid).catch(() => null);
+    const [metadata, settings] = await Promise.all([
+      getGroupMetadata(client, groupJid).catch(() => null),
+      getGroupSettings(groupJid).catch(() => null),
+    ]);
     const groupSubject = metadata?.subject || 'grup';
 
     // 1. Process Welcomes
     if (buffer.joins.size > 0) {
       const mentions = Array.from(buffer.joins.keys());
-      let text = '';
+      const tags = Array.from(buffer.joins.values());
+      let fallbackText = '';
 
       if (buffer.joins.size === 1) {
-        const [, tag] = buffer.joins.entries().next().value;
-        text = [
+        fallbackText = [
           '｢ *WELCOME* ｣',
-          `Selamat datang ${tag} di *${groupSubject}*!`,
+          `Selamat datang ${tags[0]} di *${groupSubject}*!`,
         ].join('\n');
       } else {
-        const lines = Array.from(buffer.joins.values())
-          .map((tag) => `• ${tag}`)
-          .join('\n');
-        text = [
+        const lines = tags.map((tag) => `• ${tag}`).join('\n');
+        fallbackText = [
           '｢ *WELCOME* ｣',
           `Selamat datang kepada ${buffer.joins.size} anggota baru di *${groupSubject}*:`,
           lines,
         ].join('\n');
       }
+
+      const text = settings?.welcomeAi
+        ? await composeGreetingMessage({
+            kind: 'welcome',
+            groupSubject,
+            tags,
+            fallbackText,
+          })
+        : fallbackText;
 
       await send(client, groupJid, text, { mentions });
       logger.info(
@@ -160,24 +171,31 @@ async function flushBuffer(groupJid) {
     // 2. Process Goodbyes
     if (buffer.leaves.size > 0) {
       const mentions = Array.from(buffer.leaves.keys());
-      let text = '';
+      const tags = Array.from(buffer.leaves.values());
+      let fallbackText = '';
 
       if (buffer.leaves.size === 1) {
-        const [, tag] = buffer.leaves.entries().next().value;
-        text = [
+        fallbackText = [
           '｢ *GOODBYE* ｣',
-          `Selamat tinggal ${tag} dari *${groupSubject}*.`,
+          `Selamat tinggal ${tags[0]} dari *${groupSubject}*.`,
         ].join('\n');
       } else {
-        const lines = Array.from(buffer.leaves.values())
-          .map((tag) => `• ${tag}`)
-          .join('\n');
-        text = [
+        const lines = tags.map((tag) => `• ${tag}`).join('\n');
+        fallbackText = [
           '｢ *GOODBYE* ｣',
           `Selamat tinggal kepada ${buffer.leaves.size} anggota yang telah keluar dari *${groupSubject}*:`,
           lines,
         ].join('\n');
       }
+
+      const text = settings?.goodbyeAi
+        ? await composeGreetingMessage({
+            kind: 'goodbye',
+            groupSubject,
+            tags,
+            fallbackText,
+          })
+        : fallbackText;
 
       await send(client, groupJid, text, { mentions });
       logger.info(

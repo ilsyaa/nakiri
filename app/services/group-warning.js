@@ -1,6 +1,7 @@
 import db from '@nakiri/core/services/database';
 import logger from '@nakiri/core/utils/logger';
 import { DateTime } from 'luxon';
+import { composeWarningMessage } from '#app/services/ai/group.js';
 import { getContextInfo, toUserJid } from 'zapo-js';
 
 /**
@@ -261,13 +262,27 @@ export async function applyGroupWarning({
 
   const maxWarn = Number(tableGroup.settings?.maxWarn ?? 3);
   const currentWarn = Number(targetMember.warnings ?? 0) + 1;
-  const reasonSuffix = reason ? ` - ${reason}` : '';
+  const reasonLine = reason ? `\n> ${reason}` : '';
+  const reasonInline = reason ? ` - ${reason}` : '';
 
   const sendReply = (text) => {
     if (replyTo === 'quoted' && typeof msg.quoted?.reply === 'function') {
       return msg.quoted.reply(text);
     }
     return msg.reply(text, { mentions: [candidates[0]] });
+  };
+
+  const useAi = Boolean(tableGroup.settings?.warnAi);
+  const formatReply = async ({ kicked = false, kickFailed = false, fallbackText }) => {
+    if (!useAi) return fallbackText;
+    return composeWarningMessage({
+      currentWarn,
+      maxWarn,
+      kicked,
+      kickFailed,
+      reason,
+      fallbackText,
+    });
   };
 
   if (currentWarn >= maxWarn) {
@@ -292,9 +307,11 @@ export async function applyGroupWarning({
         logTag,
         `Member ${kickedJid} removed from group ${msg.chat} after reaching max warnings.`
       );
-      await sendReply(
-        `Dikeluarkan karena telah mencapai batas peringatan (${currentWarn}/${maxWarn})\n> ${reasonSuffix}.`
-      );
+      const text = await formatReply({
+        kicked: true,
+        fallbackText: `Dikeluarkan karena telah mencapai batas peringatan (${currentWarn}/${maxWarn})${reason ? '' : '.'}${reasonLine}`,
+      });
+      await sendReply(text);
       return { currentWarn, maxWarn, kicked: true };
     }
 
@@ -304,9 +321,11 @@ export async function applyGroupWarning({
       .update({ warnings: currentWarn, last_warned_at: now });
     targetMember.last_warned_at = now;
 
-    await sendReply(
-      `Telah mencapai batas peringatan (${currentWarn}/${maxWarn})${reasonSuffix}, tetapi gagal mengeluarkan member dari grup.`
-    );
+    const text = await formatReply({
+      kickFailed: true,
+      fallbackText: `Telah mencapai batas peringatan (${currentWarn}/${maxWarn})${reasonInline}, tetapi gagal mengeluarkan member dari grup.`,
+    });
+    await sendReply(text);
     return { currentWarn, maxWarn, kicked: false };
   }
 
@@ -316,8 +335,9 @@ export async function applyGroupWarning({
     .update({ warnings: currentWarn, last_warned_at: now });
   targetMember.last_warned_at = now;
 
-  await sendReply(
-    `Mendapatkan peringatan ke-${currentWarn}/${maxWarn}\n> ${reasonSuffix}`
-  );
+  const text = await formatReply({
+    fallbackText: `Mendapatkan peringatan ke-${currentWarn}/${maxWarn}${reasonLine}`,
+  });
+  await sendReply(text);
   return { currentWarn, maxWarn, kicked: false };
 }

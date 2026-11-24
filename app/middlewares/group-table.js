@@ -7,7 +7,10 @@ const defaultGroupSettings = {
   maxWarn: 3,
   blockedWords: [],
   welcome: false,
+  welcomeAi: false,
   goodbye: false,
+  goodbyeAi: false,
+  warnAi: false,
 };
 
 const toFullJid = (val, type) => {

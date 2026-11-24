@@ -223,6 +223,36 @@ Aturan:
 - Langsung ke isi, jangan mengulang instruksi ini.`;
 }
 
+const GROUP_ACTION_TASKS = {
+  welcome:
+    'Tugas: sambut anggota baru yang baru masuk grup WhatsApp secara natural dan santai.',
+  goodbye:
+    'Tugas: beri ucapan perpisahan singkat ke anggota yang baru keluar dari grup WhatsApp.',
+  warn:
+    'Tugas: beri tahu anggota grup bahwa dia mendapat peringatan (atau dikeluarkan jika sudah mencapai batas) dengan nada santai tapi tegas.',
+};
+
+/**
+ * Build the system prompt for AI-generated group moderation/greeting messages.
+ *
+ * @param {'welcome' | 'goodbye' | 'warn'} kind
+ * @returns {string}
+ */
+export function buildGroupActionSystemPrompt(kind) {
+  const task = GROUP_ACTION_TASKS[kind] || GROUP_ACTION_TASKS.warn;
+
+  return `${NAKIRI_IDENTITY}
+
+${task}
+Aturan:
+- 1-2 kalimat pendek, bahasa Indonesia santai, dominan lowercase.
+- Jika input menyertakan tag @nomor/id, WAJIB sertakan semua tag tersebut persis apa adanya tanpa diubah.
+- Untuk peringatan (warn), WAJIB sebutkan angka peringatan (misal 1/3) dan alasannya jika ada.
+- Tanpa emoji, markdown, bullet, atau tanda kutip pembuka/penutup.
+- Jangan menjelaskan bahwa kamu AI, bot, atau asisten.
+- Langsung ke isi pesan.`;
+}
+
 /**
  * Build the group summary prompt. The output is a structured report,
  * so the chat-length rules do not apply here.
