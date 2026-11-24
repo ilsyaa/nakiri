@@ -187,13 +187,21 @@ export default defineCommand({
         : [rawText, ''];
 
       const packname = customPack || 'Nakiri';
-      const author = customAuthor || msg.sender?.pushName || 'BOT';
+      const author = customAuthor || msg.sender?.name || 'BOT';
 
       const visualNode = hasOwnVisual ? msg : msg.quoted;
       const visualInfo = hasOwnVisual ? ownInfo : quotedInfo;
+      const visualKind = visualInfo.kind;
+      if (
+        visualKind !== 'video' &&
+        visualKind !== 'image' &&
+        visualKind !== 'webp'
+      ) {
+        return;
+      }
 
       if (
-        visualInfo.kind === 'video' &&
+        visualKind === 'video' &&
         visualInfo.seconds > MAX_AUDIO_STICKER_DURATION
       ) {
         return msg.reply(
@@ -214,7 +222,7 @@ export default defineCommand({
         }
 
         const [stickerRes, audioRes] = await Promise.all([
-          prepareStickerBuffer(visualBuf, visualInfo.kind, {
+          prepareStickerBuffer(visualBuf, visualKind, {
             packname,
             author,
           }),
@@ -234,7 +242,7 @@ export default defineCommand({
       }
 
       // Case B: Video -> convert animated WebP and extract audio track in parallel
-      if (visualInfo.kind === 'video') {
+      if (visualKind === 'video') {
         const [stickerOutcome, audioOutcome] = await Promise.allSettled([
           prepareStickerBuffer(visualBuf, 'video', { packname, author }),
           convertAudioToOggOpus(visualBuf, 'mp4'),
@@ -283,7 +291,7 @@ export default defineCommand({
       // Case C: Image or WebP sticker -> store in 60s session
       const { stickerBuffer, isAnimated } = await prepareStickerBuffer(
         visualBuf,
-        visualInfo.kind,
+        visualKind,
         { packname, author }
       );
 

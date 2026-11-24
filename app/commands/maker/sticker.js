@@ -4,7 +4,7 @@ import logger from '@nakiri/core/utils/logger';
 
 export default defineCommand({
   name: 'sticker',
-  aliases: ['s', 'sticker', 'stiker', 'smeme', 'stickermeme'],
+  aliases: ['sticker', 's', 'stiker', 'smeme', 'stickermeme'],
   category: 'maker',
   description:
     'Convert image/video or media URL to sticker with optional meme text',
