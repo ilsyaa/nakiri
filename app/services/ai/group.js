@@ -16,6 +16,38 @@ function normalizeOutput(raw) {
 }
 
 /**
+ * Replace `@mention` / `@mentionN` placeholders with real `@digits` tags.
+ * Returns `null` if any required tag cannot be placed.
+ *
+ * @param {string} text
+ * @param {string[]} tags
+ * @returns {string | null}
+ */
+function applyMentionPlaceholders(text, tags) {
+  if (!tags || tags.length === 0) return text;
+
+  let result = text;
+  if (tags.length === 1) {
+    result = result.replace(/@mention1?\b|\{mention1?\}/gi, tags[0]);
+    if (!result.includes(tags[0])) {
+      result = `${tags[0]} ${result}`;
+    }
+    return result;
+  }
+
+  result = result.replace(
+    /@mention(\d+)\b|\{mention(\d+)\}/gi,
+    (match, idx1, idx2) => {
+      const idx = Number(idx1 || idx2) - 1;
+      return idx >= 0 && idx < tags.length ? tags[idx] : match;
+    }
+  );
+
+  const hasAllTags = tags.every((tag) => result.includes(tag));
+  return hasAllTags ? result : null;
+}
+
+/**
  * Compose an AI welcome or goodbye message in Nakiri's persona voice.
  * Falls back to `fallbackText` if the AI call fails or drops required tags.
  *
@@ -33,6 +65,11 @@ export async function composeGreetingMessage({
   tags,
   fallbackText,
 }) {
+  const placeholders =
+    tags.length === 1
+      ? ['@mention']
+      : tags.map((_, index) => `@mention${index + 1}`);
+
   try {
     const content = await createChatCompletion(
       [
@@ -45,12 +82,12 @@ export async function composeGreetingMessage({
           content: [
             `Aksi: ${kind === 'welcome' ? 'member baru masuk' : 'member keluar'}`,
             `Nama grup: ${groupSubject}`,
-            `Tag wajib disertakan: ${tags.join(' ')}`,
+            `Placeholder tag wajib: ${placeholders.join(' ')}`,
           ].join('\n'),
         },
       ],
       {
-        temperature: 0.85,
+        temperature: 0.95,
         maxTokens: 500,
         enableWebSearch: false,
       }
@@ -59,8 +96,7 @@ export async function composeGreetingMessage({
     const text = normalizeOutput(content);
     if (!text) return fallbackText;
 
-    const hasAllTags = tags.every((tag) => text.includes(tag));
-    return hasAllTags ? text : fallbackText;
+    return applyMentionPlaceholders(text, tags) || fallbackText;
   } catch (err) {
     logger.error(
       '[GROUP_AI]',
@@ -113,22 +149,24 @@ export async function composeWarningMessage({
           content: [
             `Status: ${status}`,
             `Peringatan: ${ratio}`,
-            ...(targetTag ? [`Tag wajib disertakan: ${targetTag}`] : []),
+            ...(targetTag ? ['Placeholder tag wajib: @mention'] : []),
             ...(reason ? [`Alasan: ${reason}`] : []),
           ].join('\n'),
         },
       ],
       {
-        temperature: 0.85,
+        temperature: 0.95,
         maxTokens: 500,
         enableWebSearch: false,
       }
     );
 
     const text = normalizeOutput(content);
-    if (!text) return fallbackText;
-    if (!text.includes(ratio)) return fallbackText;
-    if (targetTag && !text.includes(targetTag)) return fallbackText;
+    if (!text || !text.includes(ratio)) return fallbackText;
+
+    if (targetTag) {
+      return applyMentionPlaceholders(text, [targetTag]) || fallbackText;
+    }
 
     return text;
   } catch (err) {

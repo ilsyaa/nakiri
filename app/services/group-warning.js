@@ -265,11 +265,24 @@ export async function applyGroupWarning({
   const reasonLine = reason ? `\n> ${reason}` : '';
   const reasonInline = reason ? ` - ${reason}` : '';
 
+  const mentionJid =
+    participant?.jid ||
+    targetMember.user_pn ||
+    targetMember.user_lid ||
+    participant?.lid ||
+    toPnJid(candidates[0]) ||
+    candidates[0];
+  const targetNum = String(mentionJid || '').split('@')[0].split(':')[0];
+  const targetTag = targetNum ? `@${targetNum}` : null;
+
   const sendReply = (text) => {
+    const options = mentionJid
+      ? { mentions: [mentionJid], autoMention: false }
+      : undefined;
     if (replyTo === 'quoted' && typeof msg.quoted?.reply === 'function') {
-      return msg.quoted.reply(text);
+      return msg.quoted.reply(text, options);
     }
-    return msg.reply(text, { mentions: [candidates[0]] });
+    return msg.reply(text, options);
   };
 
   const useAi = Boolean(tableGroup.settings?.warnAi);
@@ -281,6 +294,7 @@ export async function applyGroupWarning({
       kicked,
       kickFailed,
       reason,
+      targetTag,
       fallbackText,
     });
   };

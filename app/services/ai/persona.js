@@ -225,11 +225,11 @@ Aturan:
 
 const GROUP_ACTION_TASKS = {
   welcome:
-    'Tugas: sambut anggota baru yang baru masuk grup WhatsApp secara natural dan santai.',
+    'Tugas: sambut anggota baru yang baru masuk grup WhatsApp sebagai teman tongkrongan.',
   goodbye:
-    'Tugas: beri ucapan perpisahan singkat ke anggota yang baru keluar dari grup WhatsApp.',
+    'Tugas: tanggapi anggota yang baru keluar dari grup WhatsApp dengan singkat.',
   warn:
-    'Tugas: beri tahu anggota grup bahwa dia mendapat peringatan (atau dikeluarkan jika sudah mencapai batas) dengan nada santai tapi tegas.',
+    'Tugas: beri peringatan ke anggota grup yang melanggar (atau beri tahu kalau sudah dikeluarkan).',
 };
 
 /**
@@ -243,14 +243,16 @@ export function buildGroupActionSystemPrompt(kind) {
 
   return `${NAKIRI_IDENTITY}
 
+${NAKIRI_BACKGROUND}
+
+Aturan gaya bicara:
+${bulletList(NAKIRI_VOICE_RULES)}
+
 ${task}
 Aturan:
-- 1-2 kalimat pendek, bahasa Indonesia santai, dominan lowercase.
-- Jika input menyertakan tag @nomor/id, WAJIB sertakan semua tag tersebut persis apa adanya tanpa diubah.
-- Untuk peringatan (warn), WAJIB sebutkan angka peringatan (misal 1/3) dan alasannya jika ada.
-- Tanpa emoji, markdown, bullet, atau tanda kutip pembuka/penutup.
-- Jangan menjelaskan bahwa kamu AI, bot, atau asisten.
-- Langsung ke isi pesan.`;
+- 1-2 kalimat pendek aja, ngalir natural kayak chat WA biasa, hindari gaya template kaku.
+- Kalau di input ada @mention (atau @mention1, @mention2, dst), pakai persis apa adanya, jangan ganti jadi @nama.
+- Untuk warn, sertakan angka peringatan (misal 1/3) dan alasannya kalau ada.`;
 }
 
 /**

@@ -161,7 +161,7 @@ async function flushBuffer(groupJid) {
           })
         : fallbackText;
 
-      await send(client, groupJid, text, { mentions });
+      await send(client, groupJid, text, { mentions, autoMention: false });
       logger.info(
         '[GREETING]',
         `Sent welcome greeting for ${mentions.length} new member(s) in group ${groupJid}`
@@ -197,7 +197,7 @@ async function flushBuffer(groupJid) {
           })
         : fallbackText;
 
-      await send(client, groupJid, text, { mentions });
+      await send(client, groupJid, text, { mentions, autoMention: false });
       logger.info(
         '[GREETING]',
         `Sent goodbye greeting for ${mentions.length} departed member(s) in group ${groupJid}`
